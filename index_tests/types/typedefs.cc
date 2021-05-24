@@ -1,5 +1,5 @@
-typedef int (func)(const int *a, const int *b);
-static func	g;
+typedef int(func)(const int *a, const int *b);
+static func g;
 
 /*
 OUTPUT:

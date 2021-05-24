@@ -7,4 +7,3 @@ class Foobar {
   Foobar(int&&, Bar*, bool*) {}
   Foobar(int, Bar*, bool*) {}
 };
-

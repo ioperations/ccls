@@ -2,27 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #if defined(__unix__) || defined(__APPLE__)
-#include "platform.hh"
-
-#include "utils.hh"
-
 #include <assert.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <pthread.h>
 #include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
-#include <sys/types.h> // required for stat.h
+#include <sys/types.h>  // required for stat.h
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
+
+#include "platform.hh"
+#include "utils.hh"
 #ifdef __GLIBC__
 #include <malloc.h>
 #endif
@@ -57,8 +55,7 @@ void traceMe() {
   // In gdb, you need to invoke `signal SIGCONT` if you want ccls to continue
   // after detaching.
   const char *traceme = getenv("CCLS_TRACEME");
-  if (traceme)
-    raise(traceme[0] == 's' ? SIGSTOP : SIGTSTP);
+  if (traceme) raise(traceme[0] == 's' ? SIGSTOP : SIGTSTP);
 }
 
 void spawnThread(void *(*fn)(void *), void *arg) {
@@ -75,6 +72,6 @@ void spawnThread(void *(*fn)(void *), void *arg) {
   pthread_create(&thd, &attr, fn, arg);
   pthread_attr_destroy(&attr);
 }
-} // namespace ccls
+}  // namespace ccls
 
 #endif

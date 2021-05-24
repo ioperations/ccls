@@ -1,19 +1,20 @@
-template<class T>
+template <class T>
 class function;
 
-template<typename T, typename... Args>
+template <typename T, typename... Args>
 class function<T(Args...)> {};
 
 function<void(int)> f;
 
-template<typename T> class allocator;
+template <typename T>
+class allocator;
 
-template<typename T, typename Alloc = allocator<T> >
+template <typename T, typename Alloc = allocator<T> >
 class vector {
   void clear();
 };
 
-template<typename T>
+template <typename T>
 class vector<T*> {};
 
 struct Z1 {};
@@ -22,7 +23,7 @@ template class vector<Z1>;
 
 struct Z2 {};
 
-template<>
+template <>
 class vector<Z2> {
   void clear();
 };
@@ -32,9 +33,7 @@ vector<int*> vip;
 vector<Z1> vz1;
 vector<Z2> vz2;
 
-enum Enum {
-  Enum0, Enum1
-};
+enum Enum { Enum0, Enum1 };
 template <typename T, int I, Enum, int E>
 void foo(T Value) {}
 
@@ -123,15 +122,10 @@ OUTPUT:
       "uses": []
     }, {
       "usr": 218068462278884837,
-      "detailed_name": "template <typename T, typename ...Args> class function<type-parameter-0-0 (type-parameter-0-1...)> {}",
-      "qual_name_offset": 46,
-      "short_name": "function",
-      "spell": "5:7-5:15|4:1-5:30|2|-1",
-      "bases": [15019211479263750068],
-      "funcs": [],
-      "types": [],
-      "vars": [],
-      "alias_of": 0,
+      "detailed_name": "template <typename T, typename ...Args> class
+function<type-parameter-0-0 (type-parameter-0-1...)> {}", "qual_name_offset":
+46, "short_name": "function", "spell": "5:7-5:15|4:1-5:30|2|-1", "bases":
+[15019211479263750068], "funcs": [], "types": [], "vars": [], "alias_of": 0,
       "kind": 5,
       "parent_kind": 0,
       "declarations": [],
@@ -188,7 +182,8 @@ OUTPUT:
       "declarations": [],
       "derived": [16155717907537731864, 1663022413889915338],
       "instances": [5792869548777559988],
-      "uses": ["17:7-17:13|4|-1", "21:16-21:22|4|-1", "30:1-30:7|4|-1", "32:1-32:7|4|-1"]
+      "uses": ["17:7-17:13|4|-1", "21:16-21:22|4|-1", "30:1-30:7|4|-1",
+"32:1-32:7|4|-1"]
     }, {
       "usr": 9201299975592934124,
       "detailed_name": "enum Enum {}",
@@ -290,11 +285,9 @@ OUTPUT:
       "uses": ["11:39-11:48|4|-1"]
     }, {
       "usr": 16155717907537731864,
-      "detailed_name": "template <typename T> class vector<type-parameter-0-0 *, allocator<type-parameter-0-0 *>> {}",
-      "qual_name_offset": 28,
-      "short_name": "vector",
-      "spell": "17:7-17:13|16:1-17:20|2|-1",
-      "bases": [7440942986741176606],
+      "detailed_name": "template <typename T> class vector<type-parameter-0-0 *,
+allocator<type-parameter-0-0 *>> {}", "qual_name_offset": 28, "short_name":
+"vector", "spell": "17:7-17:13|16:1-17:20|2|-1", "bases": [7440942986741176606],
       "funcs": [],
       "types": [],
       "vars": [],

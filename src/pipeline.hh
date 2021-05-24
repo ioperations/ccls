@@ -3,14 +3,14 @@
 
 #pragma once
 
-#include "lsp.hh"
-#include "query.hh"
-
 #include <atomic>
 #include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "lsp.hh"
+#include "query.hh"
 
 namespace ccls {
 struct SemaManager;
@@ -66,10 +66,12 @@ std::optional<std::string> loadIndexedContent(const std::string &path);
 
 void notifyOrRequest(const char *method, bool request,
                      const std::function<void(JsonWriter &)> &fn);
-template <typename T> void notify(const char *method, T &result) {
+template <typename T>
+void notify(const char *method, T &result) {
   notifyOrRequest(method, false, [&](JsonWriter &w) { reflect(w, result); });
 }
-template <typename T> void request(const char *method, T &result) {
+template <typename T>
+void request(const char *method, T &result) {
   notifyOrRequest(method, true, [&](JsonWriter &w) { reflect(w, result); });
 }
 
@@ -77,8 +79,9 @@ void reply(const RequestId &id, const std::function<void(JsonWriter &)> &fn);
 
 void replyError(const RequestId &id,
                 const std::function<void(JsonWriter &)> &fn);
-template <typename T> void replyError(const RequestId &id, T &result) {
+template <typename T>
+void replyError(const RequestId &id, T &result) {
   replyError(id, [&](JsonWriter &w) { reflect(w, result); });
 }
-} // namespace pipeline
-} // namespace ccls
+}  // namespace pipeline
+}  // namespace ccls

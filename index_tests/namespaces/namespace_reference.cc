@@ -1,7 +1,7 @@
 namespace ns {
-  int Foo;
-  void Accept(int a) {}
-}
+int Foo;
+void Accept(int a) {}
+}  // namespace ns
 
 void Runner() {
   ns::Accept(ns::Foo);
@@ -22,9 +22,8 @@ OUTPUT:
       "spell": "6:6-6:12|6:1-10:2|2|-1",
       "bases": [],
       "vars": [],
-      "callees": ["7:7-7:13|17328473273923617489|3|16420", "9:3-9:9|17328473273923617489|3|16420"],
-      "kind": 12,
-      "parent_kind": 0,
+      "callees": ["7:7-7:13|17328473273923617489|3|16420",
+"9:3-9:9|17328473273923617489|3|16420"], "kind": 12, "parent_kind": 0,
       "storage": 0,
       "declarations": [],
       "derived": [],
@@ -108,6 +107,3 @@ OUTPUT:
     }]
 }
 */
-
-
-

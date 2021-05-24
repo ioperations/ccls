@@ -1,11 +1,11 @@
 // Copyright 2017-2018 ccls Authors
 // SPDX-License-Identifier: Apache-2.0
 
+#include <clang/Sema/Sema.h>
+
 #include "message_handler.hh"
 #include "pipeline.hh"
 #include "sema_manager.hh"
-
-#include <clang/Sema/Sema.h>
 
 namespace ccls {
 using namespace clang;
@@ -32,27 +32,27 @@ void buildOptional(const CodeCompletionString &ccs, std::string &label,
                    std::vector<ParameterInformation> &ls_params) {
   for (const auto &chunk : ccs) {
     switch (chunk.Kind) {
-    case CodeCompletionString::CK_Optional:
-      buildOptional(*chunk.Optional, label, ls_params);
-      break;
-    case CodeCompletionString::CK_Placeholder:
-      // A string that acts as a placeholder for, e.g., a function call
-      // argument.
-      // Intentional fallthrough here.
-    case CodeCompletionString::CK_CurrentParameter: {
-      // A piece of text that describes the parameter that corresponds to
-      // the code-completion location within a function call, message send,
-      // macro invocation, etc.
-      int off = (int)label.size();
-      label += chunk.Text;
-      ls_params.push_back({{off, (int)label.size()}});
-      break;
-    }
-    case CodeCompletionString::CK_VerticalSpace:
-      break;
-    default:
-      label += chunk.Text;
-      break;
+      case CodeCompletionString::CK_Optional:
+        buildOptional(*chunk.Optional, label, ls_params);
+        break;
+      case CodeCompletionString::CK_Placeholder:
+        // A string that acts as a placeholder for, e.g., a function call
+        // argument.
+        // Intentional fallthrough here.
+      case CodeCompletionString::CK_CurrentParameter: {
+        // A piece of text that describes the parameter that corresponds to
+        // the code-completion location within a function call, message send,
+        // macro invocation, etc.
+        int off = (int)label.size();
+        label += chunk.Text;
+        ls_params.push_back({{off, (int)label.size()}});
+        break;
+      }
+      case CodeCompletionString::CK_VerticalSpace:
+        break;
+      default:
+        label += chunk.Text;
+        break;
     }
   }
 }
@@ -61,18 +61,19 @@ class SignatureHelpConsumer : public CodeCompleteConsumer {
   std::shared_ptr<GlobalCodeCompletionAllocator> alloc;
   CodeCompletionTUInfo cCTUInfo;
 
-public:
+ public:
   bool from_cache;
   SignatureHelp ls_sighelp;
   SignatureHelpConsumer(const clang::CodeCompleteOptions &opts, bool from_cache)
       :
-#if LLVM_VERSION_MAJOR >= 9 // rC358696
+#if LLVM_VERSION_MAJOR >= 9  // rC358696
         CodeCompleteConsumer(opts),
 #else
         CodeCompleteConsumer(opts, false),
 #endif
         alloc(std::make_shared<GlobalCodeCompletionAllocator>()),
-        cCTUInfo(alloc), from_cache(from_cache) {
+        cCTUInfo(alloc),
+        from_cache(from_cache) {
   }
   void ProcessOverloadCandidates(Sema &s, unsigned currentArg,
                                  OverloadCandidate *candidates,
@@ -100,26 +101,25 @@ public:
       const RawComment *rc =
           getCompletionComment(s.getASTContext(), cand.getFunction());
       ls_sig.documentation = rc ? rc->getBriefText(s.getASTContext()) : "";
-      for (const auto &chunk : *ccs)
-        switch (chunk.Kind) {
-        case CodeCompletionString::CK_ResultType:
-          ret_type = chunk.Text;
-          break;
-        case CodeCompletionString::CK_Placeholder:
-        case CodeCompletionString::CK_CurrentParameter: {
-          int off = (int)ls_sig.label.size();
-          ls_sig.label += chunk.Text;
-          ls_sig.parameters.push_back({{off, (int)ls_sig.label.size()}});
-          break;
-        }
-        case CodeCompletionString::CK_Optional:
-          buildOptional(*chunk.Optional, ls_sig.label, ls_sig.parameters);
-          break;
-        case CodeCompletionString::CK_VerticalSpace:
-          break;
-        default:
-          ls_sig.label += chunk.Text;
-          break;
+      for (const auto &chunk : *ccs) switch (chunk.Kind) {
+          case CodeCompletionString::CK_ResultType:
+            ret_type = chunk.Text;
+            break;
+          case CodeCompletionString::CK_Placeholder:
+          case CodeCompletionString::CK_CurrentParameter: {
+            int off = (int)ls_sig.label.size();
+            ls_sig.label += chunk.Text;
+            ls_sig.parameters.push_back({{off, (int)ls_sig.label.size()}});
+            break;
+          }
+          case CodeCompletionString::CK_Optional:
+            buildOptional(*chunk.Optional, ls_sig.label, ls_sig.parameters);
+            break;
+          case CodeCompletionString::CK_VerticalSpace:
+            break;
+          default:
+            ls_sig.label += chunk.Text;
+            break;
         }
       if (ret_type) {
         ls_sig.label += " -> ";
@@ -139,7 +139,7 @@ public:
   CodeCompletionAllocator &getAllocator() override { return *alloc; }
   CodeCompletionTUInfo &getCodeCompletionTUInfo() override { return cCTUInfo; }
 };
-} // namespace
+}  // namespace
 
 void MessageHandler::textDocument_signatureHelp(
     TextDocumentPositionParam &param, ReplyOnce &reply) {
@@ -161,8 +161,7 @@ void MessageHandler::textDocument_signatureHelp(
 
   SemaManager::OnComplete callback =
       [reply, path, begin_pos, buffer_line](CodeCompleteConsumer *optConsumer) {
-        if (!optConsumer)
-          return;
+        if (!optConsumer) return;
         auto *consumer = static_cast<SignatureHelpConsumer *>(optConsumer);
         reply(consumer->ls_sighelp);
         if (!consumer->from_cache) {
@@ -190,4 +189,4 @@ void MessageHandler::textDocument_signatureHelp(
         callback));
   }
 }
-} // namespace ccls
+}  // namespace ccls

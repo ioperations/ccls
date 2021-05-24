@@ -1,10 +1,10 @@
 namespace foo {
-    namespace bar {
-         namespace baz {
-             int qux = 42;
-         }
-    }
+namespace bar {
+namespace baz {
+int qux = 42;
 }
+}  // namespace bar
+}  // namespace foo
 
 namespace fbz = foo::bar::baz;
 
@@ -48,8 +48,8 @@ OUTPUT:
       "parent_kind": 0,
       "declarations": [],
       "derived": [],
-      "instances": [15042442838933090518, 6030927277961448585, 7657277353101371136],
-      "uses": []
+      "instances": [15042442838933090518, 6030927277961448585,
+7657277353101371136], "uses": []
     }, {
       "usr": 926793467007732869,
       "detailed_name": "namespace foo {}",

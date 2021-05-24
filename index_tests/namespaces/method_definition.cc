@@ -4,7 +4,7 @@ class Foo {
 };
 
 void Foo::foo() {}
-}
+}  // namespace hello
 
 /*
 OUTPUT:

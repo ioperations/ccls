@@ -1,12 +1,12 @@
 // Copyright 2017-2018 ccls Authors
 // SPDX-License-Identifier: Apache-2.0
 
+#include <unordered_set>
+
 #include "hierarchy.hh"
 #include "message_handler.hh"
 #include "pipeline.hh"
 #include "query.hh"
-
-#include <unordered_set>
 
 namespace ccls {
 namespace {
@@ -66,8 +66,7 @@ bool expandHelper(MessageHandler *m, Out_cclsInheritance *entry, bool derived,
   if (derived) {
     if (levels > 0) {
       for (auto usr : entity.derived) {
-        if (!seen.insert(usr).second)
-          continue;
+        if (!seen.insert(usr).second) continue;
         Out_cclsInheritance entry1;
         entry1.id = std::to_string(usr);
         entry1.usr = usr;
@@ -81,8 +80,7 @@ bool expandHelper(MessageHandler *m, Out_cclsInheritance *entry, bool derived,
   } else {
     if (levels > 0) {
       for (auto usr : def->bases) {
-        if (!seen.insert(usr).second)
-          continue;
+        if (!seen.insert(usr).second) continue;
         Out_cclsInheritance entry1;
         entry1.id = std::to_string(usr);
         entry1.usr = usr;
@@ -152,7 +150,7 @@ void inheritance(MessageHandler *m, Param &param, ReplyOnce &reply) {
   else
     reply(flattenHierarchy(result));
 }
-} // namespace
+}  // namespace
 
 void MessageHandler::ccls_inheritance(JsonReader &reader, ReplyOnce &reply) {
   Param param;
@@ -168,4 +166,4 @@ void MessageHandler::textDocument_implementation(
   param1.derived = true;
   inheritance(this, param1, reply);
 }
-} // namespace ccls
+}  // namespace ccls

@@ -1,7 +1,7 @@
 enum A {};
 enum B {};
 
-template<typename T>
+template <typename T>
 T var = T();
 
 A a = var<A>;

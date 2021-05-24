@@ -1,8 +1,6 @@
 static int a;
 
-void foo() {
-  a = 3;
-}
+void foo() { a = 3; }
 
 /*
 OUTPUT:

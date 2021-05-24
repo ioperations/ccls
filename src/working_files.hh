@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "lsp.hh"
-#include "utils.hh"
-
 #include <mutex>
 #include <optional>
 #include <string>
 #include <unordered_map>
+
+#include "lsp.hh"
+#include "utils.hh"
 
 namespace ccls {
 struct WorkingFile {
@@ -54,7 +54,7 @@ struct WorkingFile {
   // non-alphanumeric character).
   Position getCompletionPosition(Position pos, std::string *filter) const;
 
-private:
+ private:
   // Compute index_to_buffer and buffer_to_index.
   void computeLineMapping();
 };
@@ -64,7 +64,8 @@ struct WorkingFiles {
   WorkingFile *getFileUnlocked(const std::string &path);
   std::string getContent(const std::string &path);
 
-  template <typename Fn> void withLock(Fn &&fn) {
+  template <typename Fn>
+  void withLock(Fn &&fn) {
     std::lock_guard lock(mutex);
     fn();
   }
@@ -81,4 +82,4 @@ int getOffsetForPosition(Position pos, std::string_view content);
 
 std::string_view lexIdentifierAroundPos(Position position,
                                         std::string_view content);
-} // namespace ccls
+}  // namespace ccls

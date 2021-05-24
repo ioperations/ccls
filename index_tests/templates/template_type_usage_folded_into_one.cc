@@ -1,4 +1,4 @@
-template<typename T>
+template <typename T>
 class Foo {};
 
 Foo<int> a;

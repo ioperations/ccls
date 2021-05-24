@@ -1,12 +1,10 @@
 class Foo {
-public:
+ public:
   Foo() {}
-  ~Foo() {};
+  ~Foo(){};
 };
 
-void foo() {
-  Foo f;
-}
+void foo() { Foo f; }
 
 // TODO: Support destructors (notice how the dtor has no usages listed).
 //        - check if variable is a pointer. if so, do *not* insert dtor
@@ -41,13 +39,9 @@ OUTPUT:
       "spell": "7:6-7:9|7:1-9:2|2|-1",
       "bases": [],
       "vars": [1893354193220338759],
-      "callees": ["8:7-8:8|3385168158331140247|3|16676", "8:7-8:8|3385168158331140247|3|16676"],
-      "kind": 12,
-      "parent_kind": 0,
-      "storage": 0,
-      "declarations": [],
-      "derived": [],
-      "uses": []
+      "callees": ["8:7-8:8|3385168158331140247|3|16676",
+"8:7-8:8|3385168158331140247|3|16676"], "kind": 12, "parent_kind": 0, "storage":
+0, "declarations": [], "derived": [], "uses": []
     }, {
       "usr": 7440261702884428359,
       "detailed_name": "Foo::~Foo() noexcept",

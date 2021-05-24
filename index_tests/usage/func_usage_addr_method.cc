@@ -2,10 +2,7 @@ struct Foo {
   void Used();
 };
 
-void user() {
-  auto x = &Foo::Used;
-}
-
+void user() { auto x = &Foo::Used; }
 
 /*
 OUTPUT:
@@ -20,9 +17,8 @@ OUTPUT:
       "spell": "5:6-5:10|5:1-7:2|2|-1",
       "bases": [],
       "vars": [4636142131003982569],
-      "callees": ["6:18-6:22|18417145003926999463|3|132", "6:18-6:22|18417145003926999463|3|132"],
-      "kind": 12,
-      "parent_kind": 0,
+      "callees": ["6:18-6:22|18417145003926999463|3|132",
+"6:18-6:22|18417145003926999463|3|132"], "kind": 12, "parent_kind": 0,
       "storage": 0,
       "declarations": [],
       "derived": [],

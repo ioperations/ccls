@@ -1,7 +1,4 @@
-enum Foo {
-  A,
-  B = 20
-};
+enum Foo { A, B = 20 };
 
 /*
 OUTPUT:

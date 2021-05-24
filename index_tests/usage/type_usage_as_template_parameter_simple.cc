@@ -1,4 +1,4 @@
-template<typename T>
+template <typename T>
 class unique_ptr {};
 
 struct S;

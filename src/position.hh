@@ -3,10 +3,11 @@
 
 #pragma once
 
-#include "utils.hh"
-
 #include <stdint.h>
+
 #include <string>
+
+#include "utils.hh"
 
 namespace ccls {
 struct Pos {
@@ -24,8 +25,7 @@ struct Pos {
     return line == o.line && column == o.column;
   }
   bool operator<(const Pos &o) const {
-    if (line != o.line)
-      return line < o.line;
+    if (line != o.line) return line < o.line;
     return column < o.column;
   }
   bool operator<=(const Pos &o) const { return !(o < *this); }
@@ -64,10 +64,11 @@ void reflect(BinaryReader &visitor, Pos &value);
 void reflect(BinaryReader &visitor, Range &value);
 void reflect(BinaryWriter &visitor, Pos &value);
 void reflect(BinaryWriter &visitor, Range &value);
-} // namespace ccls
+}  // namespace ccls
 
 namespace std {
-template <> struct hash<ccls::Range> {
+template <>
+struct hash<ccls::Range> {
   std::size_t operator()(ccls::Range x) const {
     union {
       ccls::Range range;
@@ -77,6 +78,6 @@ template <> struct hash<ccls::Range> {
     return hash<uint64_t>()(u.u64);
   }
 };
-} // namespace std
+}  // namespace std
 
 MAKE_HASHABLE(ccls::Pos, t.line, t.column);

@@ -3,15 +3,15 @@
 
 #include "working_files.hh"
 
-#include "log.hh"
-#include "position.hh"
-
 #include <clang/Basic/CharInfo.h>
 
 #include <algorithm>
 #include <chrono>
 #include <climits>
 #include <numeric>
+
+#include "log.hh"
+#include "position.hh"
 namespace chrono = std::chrono;
 
 using namespace clang;
@@ -28,8 +28,7 @@ constexpr int kMaxDiff = 20;
 constexpr int kMaxColumnAlignSize = 200;
 
 Position getPositionForOffset(const std::string &content, int offset) {
-  if (offset >= content.size())
-    offset = (int)content.size() - 1;
+  if (offset >= content.size()) offset = (int)content.size() - 1;
 
   int line = 0, col = 0;
   int i = 0;
@@ -50,8 +49,7 @@ std::vector<std::string> toLines(const std::string &c) {
       ret.emplace_back(&c[last], i - last - (i && c[i - 1] == '\r'));
       last = i + 1;
     }
-  if (last < e)
-    ret.emplace_back(&c[last], e - last);
+  if (last < e) ret.emplace_back(&c[last], e - last);
   return ret;
 }
 
@@ -84,11 +82,9 @@ int myersDiff(const char *a, int la, const char *b, int lb, int threshold) {
       int x = i == -di || (i != di && v[i - 1] < v[i + 1]) ? v[i + 1]
                                                            : v[i - 1] + 1,
           y = x - i;
-      while (x < la && y < lb && a[x] == b[y])
-        x++, y++;
+      while (x < la && y < lb && a[x] == b[y]) x++, y++;
       v[i] = x;
-      if (x == la && y == lb)
-        return di;
+      if (x == la && y == lb) return di;
     }
   }
   return threshold + 1;
@@ -128,8 +124,7 @@ int alignColumn(const std::string &a, int column, std::string b, bool is_end) {
   while (tail < (int)a.size() && tail < (int)b.size() &&
          a[a.size() - 1 - tail] == b[b.size() - 1 - tail])
     tail++;
-  if (column < head)
-    return column;
+  if (column < head) return column;
   if ((int)a.size() - tail < column)
     return column + (int)b.size() - (int)a.size();
   if (std::max(a.size(), b.size()) - head - tail >= kMaxColumnAlignSize)
@@ -163,10 +158,10 @@ int alignColumn(const std::string &a, int column, std::string b, bool is_end) {
 // Find matching buffer line of index_lines[line].
 // By symmetry, this can also be used to find matching index line of a buffer
 // line.
-std::optional<int>
-findMatchingLine(const std::vector<std::string> &index_lines,
-                 const std::vector<int> &index_to_buffer, int line, int *column,
-                 const std::vector<std::string> &buffer_lines, bool is_end) {
+std::optional<int> findMatchingLine(
+    const std::vector<std::string> &index_lines,
+    const std::vector<int> &index_to_buffer, int line, int *column,
+    const std::vector<std::string> &buffer_lines, bool is_end) {
   // If this is a confident mapping, returns.
   if (index_to_buffer[line] >= 0) {
     int ret = index_to_buffer[line];
@@ -185,8 +180,7 @@ findMatchingLine(const std::vector<std::string> &index_lines,
   up = up < 0 ? 0 : index_to_buffer[up];
   down = down >= int(index_to_buffer.size()) ? int(buffer_lines.size()) - 1
                                              : index_to_buffer[down];
-  if (up > down)
-    return std::nullopt;
+  if (up > down) return std::nullopt;
 
   // Search for lines [up,down] and use Myers's diff algorithm to find the best
   // match (least edit distance).
@@ -205,7 +199,7 @@ findMatchingLine(const std::vector<std::string> &index_lines,
   return best;
 }
 
-} // namespace
+}  // namespace
 
 WorkingFile::WorkingFile(const std::string &filename,
                          const std::string &buffer_content)
@@ -253,8 +247,7 @@ void WorkingFile::computeLineMapping() {
       hash_to_unique[h] = i;
       index_to_buffer[i] = i;
     } else {
-      if (it->second >= 0)
-        index_to_buffer[it->second] = -1;
+      if (it->second >= 0) index_to_buffer[it->second] = -1;
       index_to_buffer[i] = it->second = -1;
     }
     index_hashes[i++] = h;
@@ -270,8 +263,7 @@ void WorkingFile::computeLineMapping() {
       hash_to_unique[h] = i;
       buffer_to_index[i] = i;
     } else {
-      if (it->second >= 0)
-        buffer_to_index[it->second] = -1;
+      if (it->second >= 0) buffer_to_index[it->second] = -1;
       buffer_to_index[i] = it->second = -1;
     }
     buffer_hashes[i++] = h;
@@ -308,42 +300,37 @@ void WorkingFile::computeLineMapping() {
   // |buffer_to_index| is a inverse mapping of |index_to_buffer|.
   std::fill(buffer_to_index.begin(), buffer_to_index.end(), -1);
   for (i = 0; i < (int)index_hashes.size(); i++)
-    if (index_to_buffer[i] >= 0)
-      buffer_to_index[index_to_buffer[i]] = i;
+    if (index_to_buffer[i] >= 0) buffer_to_index[index_to_buffer[i]] = i;
 }
 
 std::optional<int> WorkingFile::getBufferPosFromIndexPos(int line, int *column,
                                                          bool is_end) {
-  if (line == (int)index_lines.size() && !*column)
-    return buffer_content.size();
+  if (line == (int)index_lines.size() && !*column) return buffer_content.size();
   if (line < 0 || line >= (int)index_lines.size()) {
     LOG_S(WARNING) << "bad index_line (got " << line << ", expected [0, "
                    << index_lines.size() << ")) in " << filename;
     return std::nullopt;
   }
 
-  if (index_to_buffer.empty())
-    computeLineMapping();
+  if (index_to_buffer.empty()) computeLineMapping();
   return findMatchingLine(index_lines, index_to_buffer, line, column,
                           buffer_lines, is_end);
 }
 
 std::optional<int> WorkingFile::getIndexPosFromBufferPos(int line, int *column,
                                                          bool is_end) {
-  if (line < 0 || line >= (int)buffer_lines.size())
-    return std::nullopt;
+  if (line < 0 || line >= (int)buffer_lines.size()) return std::nullopt;
 
-  if (buffer_to_index.empty())
-    computeLineMapping();
+  if (buffer_to_index.empty()) computeLineMapping();
   return findMatchingLine(buffer_lines, buffer_to_index, line, column,
                           index_lines, is_end);
 }
 
-Position WorkingFile::getCompletionPosition(Position pos, std::string *filter) const {
+Position WorkingFile::getCompletionPosition(Position pos,
+                                            std::string *filter) const {
   int start = getOffsetForPosition(pos, buffer_content);
   int i = start;
-  while (i > 0 && isIdentifierBody(buffer_content[i - 1]))
-    --i;
+  while (i > 0 && isIdentifierBody(buffer_content[i - 1])) --i;
   *filter = buffer_content.substr(i, start - i);
   return getPositionForOffset(buffer_content, i);
 }
@@ -396,8 +383,7 @@ void WorkingFiles::onChange(const TextDocumentDidChangeParam &change) {
                         .count();
 
   // version: number | null
-  if (change.textDocument.version)
-    file->version = *change.textDocument.version;
+  if (change.textDocument.version) file->version = *change.textDocument.version;
 
   for (const TextDocumentContentChangeEvent &diff : change.contentChanges) {
     // Per the spec replace everything if the rangeLength and range are not set.
@@ -432,8 +418,7 @@ void WorkingFiles::onClose(const std::string &path) {
 int getOffsetForPosition(Position pos, std::string_view content) {
   size_t i = 0;
   for (; pos.line > 0 && i < content.size(); i++)
-    if (content[i] == '\n')
-      pos.line--;
+    if (content[i] == '\n') pos.line--;
   for (; pos.character > 0 && i < content.size() && content[i] != '\n';
        pos.character--)
     if (uint8_t(content[i++]) >= 128) {
@@ -463,4 +448,4 @@ std::string_view lexIdentifierAroundPos(Position position,
 
   return content.substr(start, end - start);
 }
-} // namespace ccls
+}  // namespace ccls

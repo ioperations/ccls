@@ -7,11 +7,11 @@ struct C {
 template <class T>
 void foo() {
   C<T> d;
-  d.x;  // spelling range is empty, use cursor extent for range
+  d.x;      // spelling range is empty, use cursor extent for range
   d.bar();  // spelling range is empty, use cursor extent for range
 
   auto e = new C<T>;
-  e->x;  // `x` seems not exposed by libclang
+  e->x;      // `x` seems not exposed by libclang
   e->bar();  // `bar` seems not exposed by libclang
 }
 

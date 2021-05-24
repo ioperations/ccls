@@ -4,9 +4,7 @@ struct Foo {
 
 void accept(int);
 
-void foo() {
-  accept(Foo::x);
-}
+void foo() { accept(Foo::x); }
 
 /*
 OUTPUT:

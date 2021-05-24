@@ -3,14 +3,14 @@
 
 #pragma once
 
-#include "config.hh"
-#include "lsp.hh"
-
 #include <functional>
 #include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "config.hh"
+#include "lsp.hh"
 
 namespace ccls {
 struct WorkingFiles;
@@ -67,4 +67,4 @@ struct Project {
   void index(WorkingFiles *wfiles, const RequestId &id);
   void indexRelated(const std::string &path);
 };
-} // namespace ccls
+}  // namespace ccls

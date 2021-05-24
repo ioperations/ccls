@@ -1,13 +1,9 @@
 #define FOO(aaa, bbb) \
-  int a();\
+  int a();            \
   int a() { return aaa + bbb; }
 
-
-int make1() {
-  return 3;
-}
+int make1() { return 3; }
 const int make2 = 5;
-
 
 FOO(make1(), make2);
 
@@ -82,10 +78,8 @@ OUTPUT:
       "detailed_name": "FOO",
       "qual_name_offset": 0,
       "short_name": "FOO",
-      "hover": "#define FOO(aaa, bbb) \\\n  int a();\\\n  int a() { return aaa + bbb; }",
-      "spell": "1:9-1:12|1:9-3:32|2|-1",
-      "type": 0,
-      "kind": 255,
+      "hover": "#define FOO(aaa, bbb) \\\n  int a();\\\n  int a() { return aaa +
+bbb; }", "spell": "1:9-1:12|1:9-3:32|2|-1", "type": 0, "kind": 255,
       "parent_kind": 1,
       "storage": 0,
       "declarations": [],

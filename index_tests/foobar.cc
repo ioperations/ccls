@@ -1,7 +1,7 @@
 enum A {};
 enum B {};
 
-template<typename T>
+template <typename T>
 struct Foo {
   struct Inner {};
 };

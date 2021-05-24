@@ -14,7 +14,7 @@ struct Param : TextDocumentPositionParam {
   unsigned kind = ~0u;
 };
 REFLECT_STRUCT(Param, textDocument, position, kind);
-} // namespace
+}  // namespace
 
 void MessageHandler::ccls_vars(JsonReader &reader, ReplyOnce &reply) {
   Param param;
@@ -28,24 +28,23 @@ void MessageHandler::ccls_vars(JsonReader &reader, ReplyOnce &reply) {
   for (SymbolRef sym : findSymbolsAtLocation(wf, file, param.position)) {
     Usr usr = sym.usr;
     switch (sym.kind) {
-    default:
-      break;
-    case Kind::Var: {
-      const QueryVar::Def *def = db->getVar(sym).anyDef();
-      if (!def || !def->type)
-        continue;
-      usr = def->type;
-      [[fallthrough]];
-    }
-    case Kind::Type: {
-      for (DeclRef dr :
-           getVarDeclarations(db, db->getType(usr).instances, param.kind))
-        if (auto loc = getLocationLink(db, wfiles, dr))
-          result.push_back(Location(std::move(loc)));
-      break;
-    }
+      default:
+        break;
+      case Kind::Var: {
+        const QueryVar::Def *def = db->getVar(sym).anyDef();
+        if (!def || !def->type) continue;
+        usr = def->type;
+        [[fallthrough]];
+      }
+      case Kind::Type: {
+        for (DeclRef dr :
+             getVarDeclarations(db, db->getType(usr).instances, param.kind))
+          if (auto loc = getLocationLink(db, wfiles, dr))
+            result.push_back(Location(std::move(loc)));
+        break;
+      }
     }
   }
   reply(result);
 }
-} // namespace ccls
+}  // namespace ccls

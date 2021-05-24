@@ -6,7 +6,6 @@ struct Holder {
 
 const VarType Holder::static_var;
 
-
 /*
 OUTPUT:
 {
@@ -64,30 +63,6 @@ OUTPUT:
     }]
 }
 */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //#include <string>
 //#include <xiosbase>

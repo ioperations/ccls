@@ -3,15 +3,15 @@
 
 #include "position.hh"
 
-#include "serializer.hh"
-
+#include <limits.h>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
-
-#include <algorithm>
-#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <algorithm>
+
+#include "serializer.hh"
 
 namespace ccls {
 Pos Pos::fromString(const std::string &encoded) {
@@ -47,8 +47,7 @@ Range Range::fromString(const std::string &encoded) {
 }
 
 bool Range::contains(int line, int column) const {
-  if (line > UINT16_MAX)
-    return false;
+  if (line > UINT16_MAX) return false;
   Pos p{(uint16_t)line, (int16_t)std::min<int>(column, INT16_MAX)};
   return !(p < start) && p < end;
 }
@@ -95,4 +94,4 @@ void reflect(BinaryWriter &vis, Range &v) {
   reflect(vis, v.end.line);
   reflect(vis, v.end.column);
 }
-} // namespace ccls
+}  // namespace ccls

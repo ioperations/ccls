@@ -1,11 +1,11 @@
 // Copyright 2017-2018 ccls Authors
 // SPDX-License-Identifier: Apache-2.0
 
+#include <algorithm>
+
 #include "message_handler.hh"
 #include "pipeline.hh"
 #include "query.hh"
-
-#include <algorithm>
 
 MAKE_HASHABLE(ccls::SymbolIdx, t.usr, t.kind);
 
@@ -27,22 +27,20 @@ struct DocumentHighlight {
   }
 };
 REFLECT_STRUCT(DocumentHighlight, range, kind, role);
-} // namespace
+}  // namespace
 
 void MessageHandler::textDocument_documentHighlight(
     TextDocumentPositionParam &param, ReplyOnce &reply) {
   int file_id;
   auto [file, wf] =
       findOrFail(param.textDocument.uri.getPath(), reply, &file_id);
-  if (!wf)
-    return;
+  if (!wf) return;
 
   std::vector<DocumentHighlight> result;
   std::vector<SymbolRef> syms =
       findSymbolsAtLocation(wf, file, param.position, true);
   for (auto [sym, refcnt] : file->symbol2refcnt) {
-    if (refcnt <= 0)
-      continue;
+    if (refcnt <= 0) continue;
     Usr usr = sym.usr;
     Kind kind = sym.kind;
     if (std::none_of(syms.begin(), syms.end(), [&](auto &sym1) {
@@ -72,13 +70,12 @@ struct DocumentLink {
   DocumentUri target;
 };
 REFLECT_STRUCT(DocumentLink, range, target);
-} // namespace
+}  // namespace
 
 void MessageHandler::textDocument_documentLink(TextDocumentParam &param,
                                                ReplyOnce &reply) {
   auto [file, wf] = findOrFail(param.textDocument.uri.getPath(), reply);
-  if (!wf)
-    return;
+  if (!wf) return;
 
   std::vector<DocumentLink> result;
   int column;
@@ -92,7 +89,7 @@ void MessageHandler::textDocument_documentLink(TextDocumentParam &param,
                           DocumentUri::fromPath(include.resolved_path)});
     }
   reply(result);
-} // namespace ccls
+}  // namespace ccls
 
 namespace {
 struct DocumentSymbolParam : TextDocumentParam {
@@ -121,14 +118,19 @@ void reflect(JsonWriter &vis, std::unique_ptr<DocumentSymbol> &v) {
   reflect(vis, *v);
 }
 
-template <typename Def> bool ignore(const Def *def) { return false; }
-template <> bool ignore(const QueryType::Def *def) {
+template <typename Def>
+bool ignore(const Def *def) {
+  return false;
+}
+template <>
+bool ignore(const QueryType::Def *def) {
   return !def || def->kind == SymbolKind::TypeParameter;
 }
-template <> bool ignore(const QueryVar::Def *def) {
+template <>
+bool ignore(const QueryVar::Def *def) {
   return !def || def->is_local();
 }
-} // namespace
+}  // namespace
 
 void MessageHandler::textDocument_documentSymbol(JsonReader &reader,
                                                  ReplyOnce &reply) {
@@ -138,8 +140,7 @@ void MessageHandler::textDocument_documentSymbol(JsonReader &reader,
   int file_id;
   auto [file, wf] =
       findOrFail(param.textDocument.uri.getPath(), reply, &file_id, true);
-  if (!file)
-    return;
+  if (!file) return;
   auto allows = [&](SymbolRef sym) { return !(sym.role & param.excludeRole); };
 
   if (param.startLine >= 0) {
@@ -158,8 +159,7 @@ void MessageHandler::textDocument_documentSymbol(JsonReader &reader,
     std::vector<ExtentRef> syms;
     syms.reserve(file->symbol2refcnt.size());
     for (auto [sym, refcnt] : file->symbol2refcnt)
-      if (refcnt > 0 && sym.extent.valid())
-        syms.push_back(sym);
+      if (refcnt > 0 && sym.extent.valid()) syms.push_back(sym);
     // Global variables `int i, j, k;` have the same extent.start. Sort them by
     // range.start instead. In case of a tie, prioritize the widest ExtentRef.
     std::sort(syms.begin(), syms.end(),
@@ -185,13 +185,13 @@ void MessageHandler::textDocument_documentSymbol(JsonReader &reader,
       }
       withEntity(db, sym, [&](const auto &entity) {
         const auto *def = entity.anyDef();
-        if (!def)
-          return;
+        if (!def) return;
         ds->name = def->name(false);
         ds->detail = def->detailed_name;
         ds->kind = def->kind;
 
-        if (!ignore(def) && (ds->kind == SymbolKind::Namespace || allows(sym))) {
+        if (!ignore(def) &&
+            (ds->kind == SymbolKind::Namespace || allows(sym))) {
           // Drop scopes which are before selectionRange.start. In
           // `int i, j, k;`, the scope of i will be ended by j.
           while (!scopes.empty() &&
@@ -210,8 +210,7 @@ void MessageHandler::textDocument_documentSymbol(JsonReader &reader,
   } else {
     std::vector<SymbolInformation> result;
     for (auto [sym, refcnt] : file->symbol2refcnt) {
-      if (refcnt <= 0 || !allows(sym))
-        continue;
+      if (refcnt <= 0 || !allows(sym)) continue;
       if (std::optional<SymbolInformation> info =
               getSymbolInfo(db, sym, false)) {
         if ((sym.kind == Kind::Type && ignore(db->getType(sym).anyDef())) ||
@@ -226,4 +225,4 @@ void MessageHandler::textDocument_documentSymbol(JsonReader &reader,
     reply(result);
   }
 }
-} // namespace ccls
+}  // namespace ccls

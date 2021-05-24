@@ -1,8 +1,6 @@
 struct Foo;
 
-void foo() {
-  Foo* a;
-}
+void foo() { Foo* a; }
 
 /*
 OUTPUT:

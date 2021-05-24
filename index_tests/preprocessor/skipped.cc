@@ -5,8 +5,6 @@ void hello();
 
 #if false
 
-
-
 #endif
 
 #if defined(OS_FOO)

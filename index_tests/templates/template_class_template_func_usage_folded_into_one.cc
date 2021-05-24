@@ -1,6 +1,6 @@
-template<typename T>
+template <typename T>
 struct Foo {
-  template<typename R>
+  template <typename R>
   static int foo() {
     return 3;
   }

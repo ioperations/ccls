@@ -1,7 +1,5 @@
 void called() {}
-void caller() {
-  called();
-}
+void caller() { called(); }
 
 /*
 OUTPUT:

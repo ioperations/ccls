@@ -1,6 +1,5 @@
 int foo(int, int);
-int foo(int aa,
-        int bb);
+int foo(int aa, int bb);
 int foo(int aaa, int bbb);
 int foo(int a, int b) { return 0; }
 
@@ -21,9 +20,8 @@ OUTPUT:
       "kind": 12,
       "parent_kind": 0,
       "storage": 0,
-      "declarations": ["1:5-1:8|1:1-1:18|1|-1", "2:5-2:8|2:1-3:16|1|-1", "4:5-4:8|4:1-4:26|1|-1"],
-      "derived": [],
-      "uses": []
+      "declarations": ["1:5-1:8|1:1-1:18|1|-1", "2:5-2:8|2:1-3:16|1|-1",
+"4:5-4:8|4:1-4:26|1|-1"], "derived": [], "uses": []
     }],
   "usr2type": [{
       "usr": 53,

@@ -1,6 +1,16 @@
 // Copyright 2017-2018 ccls Authors
 // SPDX-License-Identifier: Apache-2.0
 
+#include <llvm/ADT/Twine.h>
+#include <llvm/Config/llvm-config.h>
+#include <llvm/Support/Threading.h>
+#include <rapidjson/document.h>
+#include <rapidjson/writer.h>
+#include <stdlib.h>
+
+#include <stdexcept>
+#include <thread>
+
 #include "filesystem.hh"
 #include "include_complete.hh"
 #include "log.hh"
@@ -10,17 +20,6 @@
 #include "project.hh"
 #include "sema_manager.hh"
 #include "working_files.hh"
-
-#include <llvm/ADT/Twine.h>
-#include <llvm/Config/llvm-config.h>
-#include <llvm/Support/Threading.h>
-
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-
-#include <stdexcept>
-#include <stdlib.h>
-#include <thread>
 
 namespace ccls {
 using namespace llvm;
@@ -194,9 +193,9 @@ struct InitializeParam {
 
   enum class Trace {
     // NOTE: serialized as a string, one of 'off' | 'messages' | 'verbose';
-    Off,      // off
-    Messages, // messages
-    Verbose   // verbose
+    Off,       // off
+    Messages,  // messages
+    Verbose    // verbose
   };
   Trace trace = Trace::Off;
 
@@ -266,7 +265,7 @@ void *indexer(void *arg_) {
   pipeline::threadLeave();
   return nullptr;
 }
-} // namespace
+}  // namespace
 
 void do_initialize(MessageHandler *m, InitializeParam &param,
                    ReplyOnce &reply) {
@@ -374,8 +373,7 @@ void do_initialize(MessageHandler *m, InitializeParam &param,
     }
 
   idx::init();
-  for (auto &[folder, _] : workspaceFolders)
-    m->project->load(folder);
+  for (auto &[folder, _] : workspaceFolders) m->project->load(folder);
 
   // Start indexer threads. Start this after loading the project, as that
   // may take a long time. Indexer threads will emit status/progress
@@ -439,4 +437,4 @@ void MessageHandler::shutdown(EmptyParam &, ReplyOnce &reply) {
 void MessageHandler::exit(EmptyParam &) {
   pipeline::g_quit.store(true, std::memory_order_relaxed);
 }
-} // namespace ccls
+}  // namespace ccls

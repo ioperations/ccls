@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "serializer.hh"
-
 #include <string>
+
+#include "serializer.hh"
 
 namespace ccls {
 /*
@@ -361,4 +361,4 @@ REFLECT_STRUCT(Config, compilationDatabaseCommand, compilationDatabaseDirectory,
 extern Config *g_config;
 
 void doPathMapping(std::string &arg);
-} // namespace ccls
+}  // namespace ccls

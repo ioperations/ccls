@@ -1,6 +1,6 @@
 struct Foo {};
 
-template<class T>
+template <class T>
 Foo::Foo() {}
 
 /*

@@ -1,12 +1,12 @@
 // Copyright 2017-2018 ccls Authors
 // SPDX-License-Identifier: Apache-2.0
 
+#include <unordered_set>
+
 #include "hierarchy.hh"
 #include "message_handler.hh"
 #include "pipeline.hh"
 #include "query.hh"
-
-#include <unordered_set>
 
 namespace ccls {
 
@@ -65,8 +65,7 @@ bool expand(MessageHandler *m, Out_cclsCall *entry, bool callee,
   const QueryFunc &func = m->db->getFunc(entry->usr);
   const QueryFunc::Def *def = func.anyDef();
   entry->numChildren = 0;
-  if (!def)
-    return false;
+  if (!def) return false;
   auto handle = [&](SymbolRef sym, int file_id, CallType call_type1) {
     entry->numChildren++;
     if (levels > 0) {
@@ -85,8 +84,7 @@ bool expand(MessageHandler *m, Out_cclsCall *entry, bool callee,
     if (callee) {
       if (const auto *def = func.anyDef())
         for (SymbolRef sym : def->callees)
-          if (sym.kind == Kind::Func)
-            handle(sym, def->file_id, call_type);
+          if (sym.kind == Kind::Func) handle(sym, def->file_id, call_type);
     } else {
       for (Use use : func.uses) {
         const QueryFile &file1 = m->db->files[use.file_id];
@@ -97,8 +95,7 @@ bool expand(MessageHandler *m, Out_cclsCall *entry, bool callee,
               use.range.end <= sym.extent.end &&
               (!best || best->extent.start < sym.extent.start))
             best = sym;
-        if (best)
-          handle(*best, use.file_id, call_type);
+        if (best) handle(*best, use.file_id, call_type);
       }
     }
   };
@@ -154,8 +151,7 @@ std::optional<Out_cclsCall> buildInitial(MessageHandler *m, Usr root_usr,
                                          bool callee, CallType call_type,
                                          bool qualified, int levels) {
   const auto *def = m->db->getFunc(root_usr).anyDef();
-  if (!def)
-    return {};
+  if (!def) return {};
 
   Out_cclsCall entry;
   entry.id = std::to_string(root_usr);
@@ -168,7 +164,7 @@ std::optional<Out_cclsCall> buildInitial(MessageHandler *m, Usr root_usr,
   expand(m, &entry, callee, call_type, qualified, levels);
   return entry;
 }
-} // namespace
+}  // namespace
 
 void MessageHandler::ccls_call(JsonReader &reader, ReplyOnce &reply) {
   Param param;
@@ -189,8 +185,7 @@ void MessageHandler::ccls_call(JsonReader &reader, ReplyOnce &reply) {
              param.levels);
   } else {
     auto [file, wf] = findOrFail(param.textDocument.uri.getPath(), reply);
-    if (!wf)
-      return;
+    if (!wf) return;
     for (SymbolRef sym : findSymbolsAtLocation(wf, file, param.position)) {
       if (sym.kind == Kind::Func) {
         result = buildInitial(this, sym.usr, param.callee, param.callType,
@@ -205,4 +200,4 @@ void MessageHandler::ccls_call(JsonReader &reader, ReplyOnce &reply) {
   else
     reply(flattenHierarchy(result));
 }
-} // namespace ccls
+}  // namespace ccls

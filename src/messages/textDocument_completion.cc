@@ -1,6 +1,10 @@
 // Copyright 2017-2018 ccls Authors
 // SPDX-License-Identifier: Apache-2.0
 
+#include <clang/Sema/CodeCompleteConsumer.h>
+#include <clang/Sema/Sema.h>
+#include <llvm/ADT/Twine.h>
+
 #include "fuzzy_match.hh"
 #include "include_complete.hh"
 #include "log.hh"
@@ -8,10 +12,6 @@
 #include "pipeline.hh"
 #include "sema_manager.hh"
 #include "working_files.hh"
-
-#include <clang/Sema/CodeCompleteConsumer.h>
-#include <clang/Sema/Sema.h>
-#include <llvm/ADT/Twine.h>
 
 #if LLVM_VERSION_MAJOR < 8
 #include <regex>
@@ -29,15 +29,12 @@ void reflect(JsonWriter &vis, CompletionItem &v) {
   REFLECT_MEMBER(label);
   REFLECT_MEMBER(kind);
   REFLECT_MEMBER(detail);
-  if (v.documentation.size())
-    REFLECT_MEMBER(documentation);
+  if (v.documentation.size()) REFLECT_MEMBER(documentation);
   REFLECT_MEMBER(sortText);
-  if (v.filterText.size())
-    REFLECT_MEMBER(filterText);
+  if (v.filterText.size()) REFLECT_MEMBER(filterText);
   REFLECT_MEMBER(insertTextFormat);
   REFLECT_MEMBER(textEdit);
-  if (v.additionalTextEdits.size())
-    REFLECT_MEMBER(additionalTextEdits);
+  if (v.additionalTextEdits.size()) REFLECT_MEMBER(additionalTextEdits);
   reflectMemberEnd(vis);
 }
 
@@ -81,15 +78,16 @@ struct ParseIncludeLineResult {
 };
 
 ParseIncludeLineResult ParseIncludeLine(const std::string &line) {
-  static const std::regex pattern("(\\s*)"       // [1]: spaces before '#'
-                                  "#"            //
-                                  "(\\s*)"       // [2]: spaces after '#'
-                                  "([^\\s\"<]*)" // [3]: "include"
-                                  "(\\s*)"       // [4]: spaces before quote
-                                  "([\"<])?"     // [5]: the first quote char
-                                  "([^\\s\">]*)" // [6]: path of file
-                                  "[\">]?"       //
-                                  "(.*)");       // [7]: suffix after quote char
+  static const std::regex pattern(
+      "(\\s*)"        // [1]: spaces before '#'
+      "#"             //
+      "(\\s*)"        // [2]: spaces after '#'
+      "([^\\s\"<]*)"  // [3]: "include"
+      "(\\s*)"        // [4]: spaces before quote
+      "([\"<])?"      // [5]: the first quote char
+      "([^\\s\">]*)"  // [6]: path of file
+      "[\">]?"        //
+      "(.*)");        // [7]: suffix after quote char
   std::smatch match;
   bool ok = std::regex_match(line, match, pattern);
   return {ok, match[3], match[5], match[6], match};
@@ -109,10 +107,8 @@ void filterCandidates(CompletionList &result, const std::string &complete_text,
   // changing function or type names, e.g. "str.|()" or "std::|<int>".
   bool has_open_paren = false;
   for (int c = end_pos.character; c < buffer_line.size(); ++c) {
-    if (buffer_line[c] == '(' || buffer_line[c] == '<')
-      has_open_paren = true;
-    if (!isspace(buffer_line[c]))
-      break;
+    if (buffer_line[c] == '(' || buffer_line[c] == '<') has_open_paren = true;
+    if (!isspace(buffer_line[c])) break;
   }
 
   auto finalize = [&]() {
@@ -142,8 +138,7 @@ void filterCandidates(CompletionList &result, const std::string &complete_text,
     std::string sort(4, ' ');
     for (auto &item : items) {
       item.textEdit.range = lsRange{begin_pos, end_pos};
-      if (has_open_paren)
-        item.textEdit.newText = item.filterText;
+      if (has_open_paren) item.textEdit.newText = item.filterText;
       // https://github.com/Microsoft/language-server-protocol/issues/543
       // Order of textEdit and additionalTextEdits is unspecified.
       auto &edits = item.additionalTextEdits;
@@ -165,10 +160,8 @@ void filterCandidates(CompletionList &result, const std::string &complete_text,
         }
         item.filterText = orig + item.filterText;
       }
-      if (item.filterText == item.label)
-        item.filterText.clear();
-      for (auto i = sort.size(); i && ++sort[i - 1] == 'A';)
-        sort[--i] = ' ';
+      if (item.filterText == item.label) item.filterText.clear();
+      for (auto i = sort.size(); i && ++sort[i - 1] == 'A';) sort[--i] = ' ';
       item.sortText = sort;
     }
   };
@@ -199,18 +192,14 @@ void filterCandidates(CompletionList &result, const std::string &complete_text,
             [](const CompletionItem &lhs, const CompletionItem &rhs) {
               int t = int(lhs.additionalTextEdits.size() -
                           rhs.additionalTextEdits.size());
-              if (t)
-                return t < 0;
-              if (lhs.score_ != rhs.score_)
-                return lhs.score_ > rhs.score_;
+              if (t) return t < 0;
+              if (lhs.score_ != rhs.score_) return lhs.score_ > rhs.score_;
               if (lhs.priority_ != rhs.priority_)
                 return lhs.priority_ < rhs.priority_;
               t = lhs.textEdit.newText.compare(rhs.textEdit.newText);
-              if (t)
-                return t < 0;
+              if (t) return t < 0;
               t = lhs.label.compare(rhs.label);
-              if (t)
-                return t < 0;
+              if (t) return t < 0;
               return lhs.filterText < rhs.filterText;
             });
 
@@ -221,95 +210,95 @@ void filterCandidates(CompletionList &result, const std::string &complete_text,
 CompletionItemKind getCompletionKind(CodeCompletionContext::Kind k,
                                      const CodeCompletionResult &r) {
   switch (r.Kind) {
-  case CodeCompletionResult::RK_Declaration: {
-    const Decl *d = r.Declaration;
-    switch (d->getKind()) {
-    case Decl::LinkageSpec:
-      return CompletionItemKind::Keyword;
-    case Decl::Namespace:
-    case Decl::NamespaceAlias:
-      return CompletionItemKind::Module;
-    case Decl::ObjCCategory:
-    case Decl::ObjCCategoryImpl:
-    case Decl::ObjCImplementation:
-    case Decl::ObjCInterface:
-    case Decl::ObjCProtocol:
-      return CompletionItemKind::Interface;
-    case Decl::ObjCMethod:
-      return CompletionItemKind::Method;
-    case Decl::ObjCProperty:
-      return CompletionItemKind::Property;
-    case Decl::ClassTemplate:
-      return CompletionItemKind::Class;
-    case Decl::FunctionTemplate:
-      return CompletionItemKind::Function;
-    case Decl::TypeAliasTemplate:
-      return CompletionItemKind::Class;
-    case Decl::VarTemplate:
-      if (cast<VarTemplateDecl>(d)->getTemplatedDecl()->isConstexpr())
-        return CompletionItemKind::Constant;
-      return CompletionItemKind::Variable;
-    case Decl::TemplateTemplateParm:
-      return CompletionItemKind::TypeParameter;
-    case Decl::Enum:
-      return CompletionItemKind::Enum;
-    case Decl::CXXRecord:
-    case Decl::Record:
-      if (auto *rd = dyn_cast<RecordDecl>(d))
-        if (rd->getTagKind() == TTK_Struct)
-          return CompletionItemKind::Struct;
-      return CompletionItemKind::Class;
-    case Decl::TemplateTypeParm:
-    case Decl::TypeAlias:
-    case Decl::Typedef:
-      return CompletionItemKind::TypeParameter;
-    case Decl::Using:
-    case Decl::ConstructorUsingShadow:
-      return CompletionItemKind::Keyword;
-    case Decl::Binding:
-      return CompletionItemKind::Variable;
-    case Decl::Field:
-    case Decl::ObjCIvar:
-      return CompletionItemKind::Field;
-    case Decl::Function:
-      return CompletionItemKind::Function;
-    case Decl::CXXMethod:
-      return CompletionItemKind::Method;
-    case Decl::CXXConstructor:
-      return CompletionItemKind::Constructor;
-    case Decl::CXXConversion:
-    case Decl::CXXDestructor:
-      return CompletionItemKind::Method;
-    case Decl::Var:
-    case Decl::Decomposition:
-    case Decl::ImplicitParam:
-    case Decl::ParmVar:
-    case Decl::VarTemplateSpecialization:
-    case Decl::VarTemplatePartialSpecialization:
-      if (cast<VarDecl>(d)->isConstexpr())
-        return CompletionItemKind::Constant;
-      return CompletionItemKind::Variable;
-    case Decl::EnumConstant:
-      return CompletionItemKind::EnumMember;
-    case Decl::IndirectField:
-      return CompletionItemKind::Field;
+    case CodeCompletionResult::RK_Declaration: {
+      const Decl *d = r.Declaration;
+      switch (d->getKind()) {
+        case Decl::LinkageSpec:
+          return CompletionItemKind::Keyword;
+        case Decl::Namespace:
+        case Decl::NamespaceAlias:
+          return CompletionItemKind::Module;
+        case Decl::ObjCCategory:
+        case Decl::ObjCCategoryImpl:
+        case Decl::ObjCImplementation:
+        case Decl::ObjCInterface:
+        case Decl::ObjCProtocol:
+          return CompletionItemKind::Interface;
+        case Decl::ObjCMethod:
+          return CompletionItemKind::Method;
+        case Decl::ObjCProperty:
+          return CompletionItemKind::Property;
+        case Decl::ClassTemplate:
+          return CompletionItemKind::Class;
+        case Decl::FunctionTemplate:
+          return CompletionItemKind::Function;
+        case Decl::TypeAliasTemplate:
+          return CompletionItemKind::Class;
+        case Decl::VarTemplate:
+          if (cast<VarTemplateDecl>(d)->getTemplatedDecl()->isConstexpr())
+            return CompletionItemKind::Constant;
+          return CompletionItemKind::Variable;
+        case Decl::TemplateTemplateParm:
+          return CompletionItemKind::TypeParameter;
+        case Decl::Enum:
+          return CompletionItemKind::Enum;
+        case Decl::CXXRecord:
+        case Decl::Record:
+          if (auto *rd = dyn_cast<RecordDecl>(d))
+            if (rd->getTagKind() == TTK_Struct)
+              return CompletionItemKind::Struct;
+          return CompletionItemKind::Class;
+        case Decl::TemplateTypeParm:
+        case Decl::TypeAlias:
+        case Decl::Typedef:
+          return CompletionItemKind::TypeParameter;
+        case Decl::Using:
+        case Decl::ConstructorUsingShadow:
+          return CompletionItemKind::Keyword;
+        case Decl::Binding:
+          return CompletionItemKind::Variable;
+        case Decl::Field:
+        case Decl::ObjCIvar:
+          return CompletionItemKind::Field;
+        case Decl::Function:
+          return CompletionItemKind::Function;
+        case Decl::CXXMethod:
+          return CompletionItemKind::Method;
+        case Decl::CXXConstructor:
+          return CompletionItemKind::Constructor;
+        case Decl::CXXConversion:
+        case Decl::CXXDestructor:
+          return CompletionItemKind::Method;
+        case Decl::Var:
+        case Decl::Decomposition:
+        case Decl::ImplicitParam:
+        case Decl::ParmVar:
+        case Decl::VarTemplateSpecialization:
+        case Decl::VarTemplatePartialSpecialization:
+          if (cast<VarDecl>(d)->isConstexpr())
+            return CompletionItemKind::Constant;
+          return CompletionItemKind::Variable;
+        case Decl::EnumConstant:
+          return CompletionItemKind::EnumMember;
+        case Decl::IndirectField:
+          return CompletionItemKind::Field;
 
-    default:
-      LOG_S(WARNING) << "Unhandled " << int(d->getKind());
-      return CompletionItemKind::Text;
+        default:
+          LOG_S(WARNING) << "Unhandled " << int(d->getKind());
+          return CompletionItemKind::Text;
+      }
+      break;
     }
-    break;
-  }
-  case CodeCompletionResult::RK_Keyword:
-    return CompletionItemKind::Keyword;
-  case CodeCompletionResult::RK_Macro:
-    return CompletionItemKind::Reference;
-  case CodeCompletionResult::RK_Pattern:
+    case CodeCompletionResult::RK_Keyword:
+      return CompletionItemKind::Keyword;
+    case CodeCompletionResult::RK_Macro:
+      return CompletionItemKind::Reference;
+    case CodeCompletionResult::RK_Pattern:
 #if LLVM_VERSION_MAJOR >= 8
-    if (k == CodeCompletionContext::CCC_IncludedFile)
-      return CompletionItemKind::File;
+      if (k == CodeCompletionContext::CCC_IncludedFile)
+        return CompletionItemKind::File;
 #endif
-    return CompletionItemKind::Snippet;
+      return CompletionItemKind::Snippet;
   }
 }
 
@@ -324,39 +313,37 @@ void buildItem(const CodeCompletionResult &r, const CodeCompletionString &ccs,
     CodeCompletionString::ChunkKind kind = chunk.Kind;
     std::string text;
     switch (kind) {
-    case CodeCompletionString::CK_TypedText:
-      text = chunk.Text;
-      for (auto i = first; i < out.size(); i++)
-        out[i].filterText = text;
-      break;
-    case CodeCompletionString::CK_Placeholder:
-      text = chunk.Text;
-      for (auto i = first; i < out.size(); i++)
-        out[i].parameters_.push_back(text);
-      break;
-    case CodeCompletionString::CK_Informative:
-      if (StringRef(chunk.Text).endswith("::"))
+      case CodeCompletionString::CK_TypedText:
+        text = chunk.Text;
+        for (auto i = first; i < out.size(); i++) out[i].filterText = text;
+        break;
+      case CodeCompletionString::CK_Placeholder:
+        text = chunk.Text;
+        for (auto i = first; i < out.size(); i++)
+          out[i].parameters_.push_back(text);
+        break;
+      case CodeCompletionString::CK_Informative:
+        if (StringRef(chunk.Text).endswith("::")) continue;
+        text = chunk.Text;
+        break;
+      case CodeCompletionString::CK_ResultType:
+        result_type = chunk.Text;
         continue;
-      text = chunk.Text;
-      break;
-    case CodeCompletionString::CK_ResultType:
-      result_type = chunk.Text;
-      continue;
-    case CodeCompletionString::CK_CurrentParameter:
-      // This should never be present while collecting completion items.
-      llvm_unreachable("unexpected CK_CurrentParameter");
-      continue;
-    case CodeCompletionString::CK_Optional: {
-      // Duplicate last element, the recursive call will complete it.
-      if (g_config->completion.duplicateOptional) {
-        out.push_back(out.back());
-        buildItem(r, *chunk.Optional, out);
+      case CodeCompletionString::CK_CurrentParameter:
+        // This should never be present while collecting completion items.
+        llvm_unreachable("unexpected CK_CurrentParameter");
+        continue;
+      case CodeCompletionString::CK_Optional: {
+        // Duplicate last element, the recursive call will complete it.
+        if (g_config->completion.duplicateOptional) {
+          out.push_back(out.back());
+          buildItem(r, *chunk.Optional, out);
+        }
+        continue;
       }
-      continue;
-    }
-    default:
-      text = chunk.Text;
-      break;
+      default:
+        text = chunk.Text;
+        break;
     }
 
     for (auto i = first; i < out.size(); ++i) {
@@ -392,26 +379,26 @@ class CompletionConsumer : public CodeCompleteConsumer {
   std::shared_ptr<clang::GlobalCodeCompletionAllocator> alloc;
   CodeCompletionTUInfo cctu_info;
 
-public:
+ public:
   bool from_cache;
   std::vector<CompletionItem> ls_items;
 
   CompletionConsumer(const CodeCompleteOptions &opts, bool from_cache)
       :
-#if LLVM_VERSION_MAJOR >= 9 // rC358696
+#if LLVM_VERSION_MAJOR >= 9  // rC358696
         CodeCompleteConsumer(opts),
 #else
         CodeCompleteConsumer(opts, false),
 #endif
         alloc(std::make_shared<clang::GlobalCodeCompletionAllocator>()),
-        cctu_info(alloc), from_cache(from_cache) {
+        cctu_info(alloc),
+        from_cache(from_cache) {
   }
 
   void ProcessCodeCompleteResults(Sema &s, CodeCompletionContext context,
                                   CodeCompletionResult *results,
                                   unsigned numResults) override {
-    if (context.getKind() == CodeCompletionContext::CCC_Recovery)
-      return;
+    if (context.getKind() == CodeCompletionContext::CCC_Recovery) return;
     ls_items.reserve(numResults);
     for (unsigned i = 0; i != numResults; i++) {
       auto &r = results[i];
@@ -420,8 +407,7 @@ public:
         continue;
       if (r.Declaration) {
         Decl::Kind k = r.Declaration->getKind();
-        if (k == Decl::CXXDestructor)
-          continue;
+        if (k == Decl::CXXDestructor) continue;
         if (k == Decl::FunctionTemplate) {
           // Ignore CXXDeductionGuide which has empty TypedText.
           auto *fd = cast<FunctionTemplateDecl>(r.Declaration);
@@ -429,8 +415,7 @@ public:
             continue;
         }
         if (auto *rd = dyn_cast<RecordDecl>(r.Declaration))
-          if (rd->isInjectedClassName())
-            continue;
+          if (rd->isInjectedClassName()) continue;
         auto nk = r.Declaration->getDeclName().getNameKind();
         if (nk == DeclarationName::CXXOperatorName ||
             nk == DeclarationName::CXXLiteralOperatorName)
@@ -487,7 +472,7 @@ public:
   CodeCompletionAllocator &getAllocator() override { return *alloc; }
   CodeCompletionTUInfo &getCodeCompletionTUInfo() override { return cctu_info; }
 };
-} // namespace
+}  // namespace
 
 void MessageHandler::textDocument_completion(CompletionParam &param,
                                              ReplyOnce &reply) {
@@ -518,17 +503,17 @@ void MessageHandler::textDocument_completion(CompletionParam &param,
     bool ok = true;
     int col = param.position.character - 2;
     switch ((*param.context.triggerCharacter)[0]) {
-    case '"':
-    case '/':
-    case '<':
-      ok = ccOpts.IncludeCodePatterns; // start with #
-      break;
-    case ':':
-      ok = col >= 0 && buffer_line[col] == ':'; // ::
-      break;
-    case '>':
-      ok = col >= 0 && buffer_line[col] == '-'; // ->
-      break;
+      case '"':
+      case '/':
+      case '<':
+        ok = ccOpts.IncludeCodePatterns;  // start with #
+        break;
+      case ':':
+        ok = col >= 0 && buffer_line[col] == ':';  // ::
+        break;
+      case '>':
+        ok = col >= 0 && buffer_line[col] == '-';  // ->
+        break;
     }
     if (!ok) {
       reply(result);
@@ -548,8 +533,7 @@ void MessageHandler::textDocument_completion(CompletionParam &param,
     {
       std::unique_lock<std::mutex> lock(
           include_complete->completion_items_mutex, std::defer_lock);
-      if (include_complete->is_scanning)
-        lock.lock();
+      if (include_complete->is_scanning) lock.lock();
       for (auto &item : include_complete->completion_items)
         if (quote == '\0' || (item.quote_kind_ & 1 && quote == '"') ||
             (item.quote_kind_ & 2 && quote == '<'))
@@ -568,8 +552,7 @@ void MessageHandler::textDocument_completion(CompletionParam &param,
   SemaManager::OnComplete callback =
       [filter, path, begin_pos, end_pos, reply,
        buffer_line](CodeCompleteConsumer *optConsumer) {
-        if (!optConsumer)
-          return;
+        if (!optConsumer) return;
         auto *consumer = static_cast<CompletionConsumer *>(optConsumer);
         CompletionList result;
         result.items = consumer->ls_items;
@@ -596,4 +579,4 @@ void MessageHandler::textDocument_completion(CompletionParam &param,
         std::make_unique<CompletionConsumer>(ccOpts, false), ccOpts, callback));
   }
 }
-} // namespace ccls
+}  // namespace ccls

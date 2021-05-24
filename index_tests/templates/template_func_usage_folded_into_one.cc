@@ -1,4 +1,4 @@
-template<typename T>
+template <typename T>
 static int foo() {
   return 3;
 }

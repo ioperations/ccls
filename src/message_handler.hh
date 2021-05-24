@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "lsp.hh"
-#include "query.hh"
-
 #include <functional>
 #include <memory>
 #include <optional>
 #include <vector>
+
+#include "lsp.hh"
+#include "query.hh"
 
 namespace ccls {
 struct SemaManager;
@@ -23,7 +23,7 @@ namespace pipeline {
 void reply(const RequestId &id, const std::function<void(JsonWriter &)> &fn);
 void replyError(const RequestId &id,
                 const std::function<void(JsonWriter &)> &fn);
-} // namespace pipeline
+}  // namespace pipeline
 
 struct CodeActionParam {
   TextDocumentIdentifier textDocument;
@@ -207,7 +207,8 @@ struct MessageHandler;
 struct ReplyOnce {
   MessageHandler &handler;
   RequestId id;
-  template <typename Res> void operator()(Res &&result) const {
+  template <typename Res>
+  void operator()(Res &&result) const {
     if (id.valid())
       pipeline::reply(id, [&](JsonWriter &w) { reflect(w, result); });
   }
@@ -241,7 +242,7 @@ struct MessageHandler {
                                                    int *out_file_id = nullptr,
                                                    bool allow_unopened = false);
 
-private:
+ private:
   void bind(const char *method, void (MessageHandler::*handler)(JsonReader &));
   template <typename Param>
   void bind(const char *method, void (MessageHandler::*handler)(Param &));
@@ -297,4 +298,4 @@ private:
 void emitSkippedRanges(WorkingFile *wfile, QueryFile &file);
 
 void emitSemanticHighlight(DB *db, WorkingFile *wfile, QueryFile &file);
-} // namespace ccls
+}  // namespace ccls

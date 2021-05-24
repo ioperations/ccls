@@ -2,9 +2,8 @@
 
 namespace ns {
 // static
-void Foo::Register(Manager* m) {
-}
-}
+void Foo::Register(Manager* m) {}
+}  // namespace ns
 
 /*
 OUTPUT: static_function_in_type.h

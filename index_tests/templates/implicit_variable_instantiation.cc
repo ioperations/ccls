@@ -1,18 +1,17 @@
 namespace ns {
-  enum VarType {};
+enum VarType {};
 
-  template<typename _>
-  struct Holder {
-    static constexpr VarType static_var = (VarType)0x0;
-  };
+template <typename _>
+struct Holder {
+  static constexpr VarType static_var = (VarType)0x0;
+};
 
-  template<typename _>
-  const typename VarType Holder<_>::static_var;
+template <typename _>
+const typename VarType Holder<_>::static_var;
 
-
-  int Foo = Holder<int>::static_var;
-  int Foo2 = Holder<int>::static_var;
-}
+int Foo = Holder<int>::static_var;
+int Foo2 = Holder<int>::static_var;
+}  // namespace ns
 
 /*
 OUTPUT:
@@ -98,12 +97,9 @@ OUTPUT:
       "detailed_name": "static constexpr ns::VarType ns::Holder::static_var",
       "qual_name_offset": 29,
       "short_name": "static_var",
-      "hover": "static constexpr ns::VarType ns::Holder::static_var = (VarType)0x0",
-      "spell": "10:37-10:47|9:3-10:47|1026|-1",
-      "type": 1532099849728741556,
-      "kind": 13,
-      "parent_kind": 23,
-      "storage": 2,
+      "hover": "static constexpr ns::VarType ns::Holder::static_var =
+(VarType)0x0", "spell": "10:37-10:47|9:3-10:47|1026|-1", "type":
+1532099849728741556, "kind": 13, "parent_kind": 23, "storage": 2,
       "declarations": ["6:30-6:40|6:5-6:55|1025|-1"],
       "uses": ["13:26-13:36|12|-1", "14:27-14:37|12|-1"]
     }, {

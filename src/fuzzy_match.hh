@@ -4,12 +4,13 @@
 #pragma once
 
 #include <limits.h>
+
 #include <string>
 #include <string_view>
 
 namespace ccls {
 class FuzzyMatcher {
-public:
+ public:
   constexpr static int kMaxPat = 100;
   constexpr static int kMaxText = 200;
   // Negative but far from INT_MIN so that intermediate results are hard to
@@ -19,7 +20,7 @@ public:
   FuzzyMatcher(std::string_view pattern, int case_sensitivity);
   int match(std::string_view text, bool strict);
 
-private:
+ private:
   int case_sensitivity;
   std::string pat;
   std::string_view text;
@@ -31,4 +32,4 @@ private:
   int matchScore(int i, int j, bool last);
   int missScore(int j, bool last);
 };
-} // namespace ccls
+}  // namespace ccls

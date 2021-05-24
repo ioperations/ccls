@@ -1,4 +1,4 @@
-template<typename T>
+template <typename T>
 struct Foo;
 
 using Foo1 = Foo<int>;

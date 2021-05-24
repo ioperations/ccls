@@ -11,9 +11,8 @@ void doPathMapping(std::string &arg) {
     auto sep = mapping.find('>');
     if (sep != std::string::npos) {
       auto p = arg.find(mapping.substr(0, sep));
-      if (p != std::string::npos)
-        arg.replace(p, sep, mapping.substr(sep + 1));
+      if (p != std::string::npos) arg.replace(p, sep, mapping.substr(sep + 1));
     }
   }
 }
-} // namespace ccls
+}  // namespace ccls

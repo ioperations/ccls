@@ -1,13 +1,13 @@
-template<unsigned int C>
+template <unsigned int C>
 class Base1 {};
 
-template<typename C>
+template <typename C>
 class Base2 {};
 
-template<unsigned int T>
+template <unsigned int T>
 class Derived1 : Base1<T> {};
 
-template<typename T>
+template <typename T>
 class Derived2 : Base2<T> {};
 
 class Derived : Base1<3>, Base2<Derived>, Derived1<4>, Derived2<Derived> {};
@@ -54,12 +54,10 @@ OUTPUT:
       "uses": ["13:56-13:64|2052|-1"]
     }, {
       "usr": 10963370434658308541,
-      "detailed_name": "class Derived : Base1<3>, Base2<Derived>, Derived1<4>, Derived2<Derived> {}",
-      "qual_name_offset": 6,
-      "short_name": "Derived",
-      "spell": "13:7-13:14|13:1-13:76|2|-1",
-      "bases": [11930058224338108382, 11118288764693061434, 5863733211528032190, 10651399730831737929],
-      "funcs": [],
+      "detailed_name": "class Derived : Base1<3>, Base2<Derived>, Derived1<4>,
+Derived2<Derived> {}", "qual_name_offset": 6, "short_name": "Derived", "spell":
+"13:7-13:14|13:1-13:76|2|-1", "bases": [11930058224338108382,
+11118288764693061434, 5863733211528032190, 10651399730831737929], "funcs": [],
       "types": [],
       "vars": [],
       "alias_of": 0,

@@ -1,4 +1,4 @@
-template<typename T>
+template <typename T>
 struct Foo {
   static constexpr int var = 3;
 };
@@ -26,8 +26,8 @@ OUTPUT:
       "parent_kind": 0,
       "declarations": [],
       "derived": [],
-      "instances": [13545144895171991916, 16721564935990383768, 12028309045033782423],
-      "uses": []
+      "instances": [13545144895171991916, 16721564935990383768,
+12028309045033782423], "uses": []
     }, {
       "usr": 10528472276654770367,
       "detailed_name": "struct Foo {}",

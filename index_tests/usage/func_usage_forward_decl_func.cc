@@ -1,8 +1,6 @@
 void foo();
 
-void usage() {
-  foo();
-}
+void usage() { foo(); }
 /*
 OUTPUT:
 {

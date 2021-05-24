@@ -9,3 +9,5 @@
 !/LICENSE
 !/README.md
 !/meow/
+.ccls-cache
+.cache

@@ -1,4 +1,4 @@
-template<typename T>
+template <typename T>
 void accept(T);
 
 void foo() {
@@ -19,9 +19,8 @@ OUTPUT:
       "spell": "4:6-4:9|4:1-7:2|2|-1",
       "bases": [],
       "vars": [],
-      "callees": ["5:3-5:9|10585861037135727329|3|16420", "6:3-6:9|10585861037135727329|3|16420"],
-      "kind": 12,
-      "parent_kind": 0,
+      "callees": ["5:3-5:9|10585861037135727329|3|16420",
+"6:3-6:9|10585861037135727329|3|16420"], "kind": 12, "parent_kind": 0,
       "storage": 0,
       "declarations": [],
       "derived": [],

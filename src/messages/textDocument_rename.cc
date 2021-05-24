@@ -1,12 +1,12 @@
 // Copyright 2017-2018 ccls Authors
 // SPDX-License-Identifier: Apache-2.0
 
-#include "message_handler.hh"
-#include "query.hh"
-
 #include <clang/Basic/CharInfo.h>
 
 #include <unordered_set>
+
+#include "message_handler.hh"
+#include "query.hh"
 
 using namespace clang;
 
@@ -21,11 +21,9 @@ WorkspaceEdit buildWorkspaceEdit(DB *db, WorkingFiles *wfiles, SymbolRef sym,
   eachOccurrence(db, sym, true, [&](Use use) {
     int file_id = use.file_id;
     QueryFile &file = db->files[file_id];
-    if (!file.def || !edited[file_id].insert(use.range).second)
-      return;
+    if (!file.def || !edited[file_id].insert(use.range).second) return;
     std::optional<Location> loc = getLsLocation(db, wfiles, use);
-    if (!loc)
-      return;
+    if (!loc) return;
 
     auto [it, inserted] = path2edit.try_emplace(file_id);
     auto &edit = it->second.second;
@@ -39,8 +37,7 @@ WorkspaceEdit buildWorkspaceEdit(DB *db, WorkingFiles *wfiles, SymbolRef sym,
     if (WorkingFile *wf = it->second.first) {
       int start = getOffsetForPosition(loc->range.start, wf->buffer_content),
           end = getOffsetForPosition(loc->range.end, wf->buffer_content);
-      if (wf->buffer_content.compare(start, end - start, old_text))
-        return;
+      if (wf->buffer_content.compare(start, end - start, old_text)) return;
     }
     edit.edits.push_back({loc->range, new_text});
   });
@@ -50,12 +47,11 @@ WorkspaceEdit buildWorkspaceEdit(DB *db, WorkingFiles *wfiles, SymbolRef sym,
     ret.documentChanges.push_back(std::move(x.second.second));
   return ret;
 }
-} // namespace
+}  // namespace
 
 void MessageHandler::textDocument_rename(RenameParam &param, ReplyOnce &reply) {
   auto [file, wf] = findOrFail(param.textDocument.uri.getPath(), reply);
-  if (!wf)
-    return;
+  if (!wf) return;
   WorkspaceEdit result;
 
   for (SymbolRef sym : findSymbolsAtLocation(wf, file, param.position)) {
@@ -68,4 +64,4 @@ void MessageHandler::textDocument_rename(RenameParam &param, ReplyOnce &reply) {
 
   reply(result);
 }
-} // namespace ccls
+}  // namespace ccls

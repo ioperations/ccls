@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "position.hh"
-
 #include <clang/Basic/FileManager.h>
 #include <clang/Basic/LangOptions.h>
 #include <clang/Basic/SourceManager.h>
 #include <clang/Frontend/CompilerInstance.h>
+
+#include "position.hh"
 
 #if LLVM_VERSION_MAJOR < 8
 // D52783 Lift VFS from clang to llvm
@@ -36,9 +36,9 @@ Range fromTokenRangeDefaulted(const clang::SourceManager &sm,
                               clang::SourceRange sr, clang::FileID fid,
                               Range range);
 
-std::unique_ptr<clang::CompilerInvocation>
-buildCompilerInvocation(const std::string &main, std::vector<const char *> args,
-                        llvm::IntrusiveRefCntPtr<llvm::vfs::FileSystem> VFS);
+std::unique_ptr<clang::CompilerInvocation> buildCompilerInvocation(
+    const std::string &main, std::vector<const char *> args,
+    llvm::IntrusiveRefCntPtr<llvm::vfs::FileSystem> VFS);
 
 const char *clangBuiltinTypeName(int);
-} // namespace ccls
+}  // namespace ccls

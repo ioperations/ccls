@@ -3,20 +3,20 @@
 
 #include "query.hh"
 
-#include "indexer.hh"
-#include "pipeline.hh"
-#include "serializer.hh"
-
-#include <rapidjson/document.h>
-
 #include <assert.h>
-#include <functional>
 #include <limits.h>
-#include <optional>
+#include <rapidjson/document.h>
 #include <stdint.h>
+
+#include <functional>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+
+#include "indexer.hh"
+#include "pipeline.hh"
+#include "serializer.hh"
 
 namespace ccls {
 namespace {
@@ -51,7 +51,7 @@ QueryFile::DefUpdate buildFileDefUpdate(IndexFile &&indexed) {
   def.skipped_ranges = std::move(indexed.skipped_ranges);
   def.dependencies.reserve(indexed.dependencies.size());
   for (auto &dep : indexed.dependencies)
-    def.dependencies.push_back(dep.first.val().data()); // llvm 8 -> data()
+    def.dependencies.push_back(dep.first.val().data());  // llvm 8 -> data()
   def.language = indexed.language;
   return {std::move(def), std::move(indexed.file_contents)};
 }
@@ -67,9 +67,10 @@ bool tryReplaceDef(llvm::SmallVectorImpl<Q> &def_list, Q &&def) {
   return false;
 }
 
-} // namespace
+}  // namespace
 
-template <typename T> Vec<T> convert(const std::vector<T> &o) {
+template <typename T>
+Vec<T> convert(const std::vector<T> &o) {
   Vec<T> r{std::make_unique<T[]>(o.size()), (int)o.size()};
   std::copy(o.begin(), o.end(), r.begin());
   return r;
@@ -164,8 +165,7 @@ IndexUpdate IndexUpdate::createDelta(IndexFile *previous, IndexFile *current) {
   r.vars_hint = int(current->usr2var.size() - previous->usr2var.size());
   for (auto &it : previous->usr2var) {
     auto &var = it.second;
-    if (var.def.detailed_name[0])
-      r.vars_removed.emplace_back(var.usr, var.def);
+    if (var.def.detailed_name[0]) r.vars_removed.emplace_back(var.usr, var.def);
     r.vars_declarations[var.usr].first = std::move(var.declarations);
     r.vars_uses[var.usr].first = std::move(var.uses);
   }
@@ -196,64 +196,58 @@ template <typename Def>
 void DB::removeUsrs(Kind kind, int file_id,
                     const std::vector<std::pair<Usr, Def>> &to_remove) {
   switch (kind) {
-  case Kind::Func: {
-    for (auto &[usr, _] : to_remove) {
-      // FIXME
-      if (!hasFunc(usr))
-        continue;
-      QueryFunc &func = getFunc(usr);
-      auto it = llvm::find_if(func.def, [=](const QueryFunc::Def &def) {
-        return def.file_id == file_id;
-      });
-      if (it != func.def.end())
-        func.def.erase(it);
+    case Kind::Func: {
+      for (auto &[usr, _] : to_remove) {
+        // FIXME
+        if (!hasFunc(usr)) continue;
+        QueryFunc &func = getFunc(usr);
+        auto it = llvm::find_if(func.def, [=](const QueryFunc::Def &def) {
+          return def.file_id == file_id;
+        });
+        if (it != func.def.end()) func.def.erase(it);
+      }
+      break;
     }
-    break;
-  }
-  case Kind::Type: {
-    for (auto &[usr, _] : to_remove) {
-      // FIXME
-      if (!hasType(usr))
-        continue;
-      QueryType &type = getType(usr);
-      auto it = llvm::find_if(type.def, [=](const QueryType::Def &def) {
-        return def.file_id == file_id;
-      });
-      if (it != type.def.end())
-        type.def.erase(it);
+    case Kind::Type: {
+      for (auto &[usr, _] : to_remove) {
+        // FIXME
+        if (!hasType(usr)) continue;
+        QueryType &type = getType(usr);
+        auto it = llvm::find_if(type.def, [=](const QueryType::Def &def) {
+          return def.file_id == file_id;
+        });
+        if (it != type.def.end()) type.def.erase(it);
+      }
+      break;
     }
-    break;
-  }
-  case Kind::Var: {
-    for (auto &[usr, _] : to_remove) {
-      // FIXME
-      if (!hasVar(usr))
-        continue;
-      QueryVar &var = getVar(usr);
-      auto it = llvm::find_if(var.def, [=](const QueryVar::Def &def) {
-        return def.file_id == file_id;
-      });
-      if (it != var.def.end())
-        var.def.erase(it);
+    case Kind::Var: {
+      for (auto &[usr, _] : to_remove) {
+        // FIXME
+        if (!hasVar(usr)) continue;
+        QueryVar &var = getVar(usr);
+        auto it = llvm::find_if(var.def, [=](const QueryVar::Def &def) {
+          return def.file_id == file_id;
+        });
+        if (it != var.def.end()) var.def.erase(it);
+      }
+      break;
     }
-    break;
-  }
-  default:
-    break;
+    default:
+      break;
   }
 }
 
 void DB::applyIndexUpdate(IndexUpdate *u) {
-#define REMOVE_ADD(C, F)                                                       \
-  for (auto &it : u->C##s_##F) {                                               \
-    auto r = C##_usr.try_emplace({it.first}, C##_usr.size());                  \
-    if (r.second) {                                                            \
-      C##s.emplace_back();                                                     \
-      C##s.back().usr = it.first;                                              \
-    }                                                                          \
-    auto &entity = C##s[r.first->second];                                      \
-    removeRange(entity.F, it.second.first);                                    \
-    addRange(entity.F, it.second.second);                                      \
+#define REMOVE_ADD(C, F)                                      \
+  for (auto &it : u->C##s_##F) {                              \
+    auto r = C##_usr.try_emplace({it.first}, C##_usr.size()); \
+    if (r.second) {                                           \
+      C##s.emplace_back();                                    \
+      C##s.back().usr = it.first;                             \
+    }                                                         \
+    auto &entity = C##s[r.first->second];                     \
+    removeRange(entity.F, it.second.first);                   \
+    addRange(entity.F, it.second.second);                     \
   }
 
   std::unordered_map<int, int> prev_lid2file_id, lid2file_id;
@@ -277,8 +271,7 @@ void DB::applyIndexUpdate(IndexUpdate *u) {
     int &v = files[use.file_id].symbol2refcnt[sym];
     v += delta;
     assert(v >= 0);
-    if (!v)
-      files[use.file_id].symbol2refcnt.erase(sym);
+    if (!v) files[use.file_id].symbol2refcnt.erase(sym);
   };
   auto refDecl = [&](std::unordered_map<int, int> &lid2fid, Usr usr, Kind kind,
                      DeclRef &dr, int delta) {
@@ -288,8 +281,7 @@ void DB::applyIndexUpdate(IndexUpdate *u) {
     int &v = files[dr.file_id].symbol2refcnt[sym];
     v += delta;
     assert(v >= 0);
-    if (!v)
-      files[dr.file_id].symbol2refcnt.erase(sym);
+    if (!v) files[dr.file_id].symbol2refcnt.erase(sym);
   };
 
   auto updateUses =
@@ -308,8 +300,7 @@ void DB::applyIndexUpdate(IndexUpdate *u) {
             // column to the left/right). This is hacky but useful. e.g.
             // textDocument/definition on the space/semicolon in `A a;` or `
             // 42;` will take you to the constructor.
-            if (use.range.start.column > 0)
-              use.range.start.column--;
+            if (use.range.start.column > 0) use.range.start.column--;
             use.range.end.column++;
           }
           ref(prev_lid2file_id, usr, kind, use, -1);
@@ -317,8 +308,7 @@ void DB::applyIndexUpdate(IndexUpdate *u) {
         removeRange(entity.uses, p.first);
         for (Use &use : p.second) {
           if (hint_implicit && use.role & Role::Implicit) {
-            if (use.range.start.column > 0)
-              use.range.start.column--;
+            if (use.range.start.column > 0) use.range.start.column--;
             use.range.end.column++;
           }
           ref(lid2file_id, usr, kind, use, 1);
@@ -341,8 +331,7 @@ void DB::applyIndexUpdate(IndexUpdate *u) {
     func_usr.reserve(t);
   }
   for (auto &[usr, def] : u->funcs_removed)
-    if (def.spell)
-      refDecl(prev_lid2file_id, usr, Kind::Func, *def.spell, -1);
+    if (def.spell) refDecl(prev_lid2file_id, usr, Kind::Func, *def.spell, -1);
   removeUsrs(Kind::Func, u->file_id, u->funcs_removed);
   update(lid2file_id, u->file_id, std::move(u->funcs_def_update));
   for (auto &[usr, del_add] : u->funcs_declarations) {
@@ -362,8 +351,7 @@ void DB::applyIndexUpdate(IndexUpdate *u) {
     type_usr.reserve(t);
   }
   for (auto &[usr, def] : u->types_removed)
-    if (def.spell)
-      refDecl(prev_lid2file_id, usr, Kind::Type, *def.spell, -1);
+    if (def.spell) refDecl(prev_lid2file_id, usr, Kind::Type, *def.spell, -1);
   removeUsrs(Kind::Type, u->file_id, u->types_removed);
   update(lid2file_id, u->file_id, std::move(u->types_def_update));
   for (auto &[usr, del_add] : u->types_declarations) {
@@ -384,8 +372,7 @@ void DB::applyIndexUpdate(IndexUpdate *u) {
     var_usr.reserve(t);
   }
   for (auto &[usr, def] : u->vars_removed)
-    if (def.spell)
-      refDecl(prev_lid2file_id, usr, Kind::Var, *def.spell, -1);
+    if (def.spell) refDecl(prev_lid2file_id, usr, Kind::Var, *def.spell, -1);
   removeUsrs(Kind::Var, u->file_id, u->vars_removed);
   update(lid2file_id, u->file_id, std::move(u->vars_def_update));
   for (auto &[usr, del_add] : u->vars_declarations) {
@@ -430,8 +417,7 @@ void DB::update(const Lid2file_id &lid2file_id, int file_id,
     }
 
     auto r = func_usr.try_emplace({u.first}, func_usr.size());
-    if (r.second)
-      funcs.emplace_back();
+    if (r.second) funcs.emplace_back();
     QueryFunc &existing = funcs[r.first->second];
     existing.usr = u.first;
     if (!tryReplaceDef(existing.def, std::move(def)))
@@ -452,8 +438,7 @@ void DB::update(const Lid2file_id &lid2file_id, int file_id,
           def.spell->extent}]++;
     }
     auto r = type_usr.try_emplace({u.first}, type_usr.size());
-    if (r.second)
-      types.emplace_back();
+    if (r.second) types.emplace_back();
     QueryType &existing = types[r.first->second];
     existing.usr = u.first;
     if (!tryReplaceDef(existing.def, std::move(def)))
@@ -474,8 +459,7 @@ void DB::update(const Lid2file_id &lid2file_id, int file_id,
           def.spell->extent}]++;
     }
     auto r = var_usr.try_emplace({u.first}, var_usr.size());
-    if (r.second)
-      vars.emplace_back();
+    if (r.second) vars.emplace_back();
     QueryVar &existing = vars[r.first->second];
     existing.usr = u.first;
     if (!tryReplaceDef(existing.def, std::move(def)))
@@ -486,31 +470,26 @@ void DB::update(const Lid2file_id &lid2file_id, int file_id,
 std::string_view DB::getSymbolName(SymbolIdx sym, bool qualified) {
   Usr usr = sym.usr;
   switch (sym.kind) {
-  default:
-    break;
-  case Kind::File:
-    if (files[usr].def)
-      return files[usr].def->path;
-    break;
-  case Kind::Func:
-    if (const auto *def = getFunc(usr).anyDef())
-      return def->name(qualified);
-    break;
-  case Kind::Type:
-    if (const auto *def = getType(usr).anyDef())
-      return def->name(qualified);
-    break;
-  case Kind::Var:
-    if (const auto *def = getVar(usr).anyDef())
-      return def->name(qualified);
-    break;
+    default:
+      break;
+    case Kind::File:
+      if (files[usr].def) return files[usr].def->path;
+      break;
+    case Kind::Func:
+      if (const auto *def = getFunc(usr).anyDef()) return def->name(qualified);
+      break;
+    case Kind::Type:
+      if (const auto *def = getType(usr).anyDef()) return def->name(qualified);
+      break;
+    case Kind::Var:
+      if (const auto *def = getVar(usr).anyDef()) return def->name(qualified);
+      break;
   }
   return "";
 }
 
 std::vector<uint8_t> DB::getFileSet(const std::vector<std::string> &folders) {
-  if (folders.empty())
-    return std::vector<uint8_t>(files.size(), 1);
+  if (folders.empty()) return std::vector<uint8_t>(files.size(), 1);
   std::vector<uint8_t> file_set(files.size());
   for (QueryFile &file : files)
     if (file.def) {
@@ -520,8 +499,7 @@ std::vector<uint8_t> DB::getFileSet(const std::vector<std::string> &folders) {
           ok = true;
           break;
         }
-      if (ok)
-        file_set[file.id] = 1;
+      if (ok) file_set[file.id] = 1;
     }
   return file_set;
 }
@@ -529,15 +507,14 @@ std::vector<uint8_t> DB::getFileSet(const std::vector<std::string> &folders) {
 namespace {
 // Computes roughly how long |range| is.
 int computeRangeSize(const Range &range) {
-  if (range.start.line != range.end.line)
-    return INT_MAX;
+  if (range.start.line != range.end.line) return INT_MAX;
   return range.end.column - range.start.column;
 }
 
 template <typename Q, typename C>
-std::vector<Use>
-getDeclarations(llvm::DenseMap<Usr, int, DenseMapInfoForUsr> &entity_usr,
-                llvm::SmallVectorImpl<Q> &entities, const C &usrs) {
+std::vector<Use> getDeclarations(
+    llvm::DenseMap<Usr, int, DenseMapInfoForUsr> &entity_usr,
+    llvm::SmallVectorImpl<Q> &entities, const C &usrs) {
   std::vector<Use> ret;
   ret.reserve(usrs.size());
   for (Usr usr : usrs) {
@@ -554,7 +531,7 @@ getDeclarations(llvm::DenseMap<Usr, int, DenseMapInfoForUsr> &entity_usr,
   }
   return ret;
 }
-} // namespace
+}  // namespace
 
 Maybe<DeclRef> getDefinitionSpell(DB *db, SymbolIdx sym) {
   Maybe<DeclRef> ret;
@@ -583,20 +560,16 @@ std::vector<DeclRef> getVarDeclarations(DB *db, const std::vector<Usr> &usrs,
         has_def = true;
         // See messages/ccls_vars.cc
         if (def.kind == SymbolKind::Field) {
-          if (!(kind & 1))
-            break;
+          if (!(kind & 1)) break;
         } else if (def.kind == SymbolKind::Variable) {
-          if (!(kind & 2))
-            break;
+          if (!(kind & 2)) break;
         } else if (def.kind == SymbolKind::Parameter) {
-          if (!(kind & 4))
-            break;
+          if (!(kind & 4)) break;
         }
         ret.push_back(*def.spell);
         break;
       }
-    if (!has_def && var.declarations.size())
-      ret.push_back(var.declarations[0]);
+    if (!has_def && var.declarations.size()) ret.push_back(var.declarations[0]);
   }
   return ret;
 }
@@ -604,14 +577,14 @@ std::vector<DeclRef> getVarDeclarations(DB *db, const std::vector<Usr> &usrs,
 std::vector<DeclRef> &getNonDefDeclarations(DB *db, SymbolIdx sym) {
   static std::vector<DeclRef> empty;
   switch (sym.kind) {
-  case Kind::Func:
-    return db->getFunc(sym).declarations;
-  case Kind::Type:
-    return db->getType(sym).declarations;
-  case Kind::Var:
-    return db->getVar(sym).declarations;
-  default:
-    break;
+    case Kind::Func:
+      return db->getFunc(sym).declarations;
+    case Kind::Type:
+      return db->getType(sym).declarations;
+    case Kind::Var:
+      return db->getVar(sym).declarations;
+    default:
+      break;
   }
   return empty;
 }
@@ -668,8 +641,7 @@ std::optional<lsRange> getLsRange(WorkingFile *wfile, const Range &location) {
       location.start.line, &start_column, false);
   std::optional<int> end =
       wfile->getBufferPosFromIndexPos(location.end.line, &end_column, true);
-  if (!start || !end)
-    return std::nullopt;
+  if (!start || !end) return std::nullopt;
 
   // If remapping end fails (end can never be < start), just guess that the
   // final location didn't move. This only screws up the highlighted code
@@ -677,10 +649,8 @@ std::optional<lsRange> getLsRange(WorkingFile *wfile, const Range &location) {
   //
   // Remapping fails often in C++ since there are a lot of "};" at the end of
   // class/struct definitions.
-  if (*end < *start)
-    *end = *start + (location.end.line - location.start.line);
-  if (*start == *end && start_column > end_column)
-    end_column = start_column;
+  if (*end < *start) *end = *start + (location.end.line - location.start.line);
+  if (*start == *end && start_column > end_column) end_column = start_column;
 
   return lsRange{Position{*start, start_column}, Position{*end, end_column}};
 }
@@ -709,8 +679,7 @@ std::optional<Location> getLsLocation(DB *db, WorkingFiles *wfiles, Use use) {
   std::string path;
   DocumentUri uri = getLsDocumentUri(db, use.file_id, &path);
   std::optional<lsRange> range = getLsRange(wfiles->getFile(path), use.range);
-  if (!range)
-    return std::nullopt;
+  if (!range) return std::nullopt;
   return Location{uri, *range};
 }
 
@@ -752,30 +721,29 @@ SymbolKind getSymbolKind(DB *db, SymbolIdx sym) {
 std::optional<SymbolInformation> getSymbolInfo(DB *db, SymbolIdx sym,
                                                bool detailed) {
   switch (sym.kind) {
-  case Kind::Invalid:
-    break;
-  case Kind::File: {
-    QueryFile &file = db->getFile(sym);
-    if (!file.def)
+    case Kind::Invalid:
       break;
+    case Kind::File: {
+      QueryFile &file = db->getFile(sym);
+      if (!file.def) break;
 
-    SymbolInformation info;
-    info.name = file.def->path;
-    info.kind = SymbolKind::File;
-    return info;
-  }
-  default: {
-    SymbolInformation info;
-    eachEntityDef(db, sym, [&](const auto &def) {
-      if (detailed)
-        info.name = def.detailed_name;
-      else
-        info.name = def.name(true);
-      info.kind = def.kind;
-      return false;
-    });
-    return info;
-  }
+      SymbolInformation info;
+      info.name = file.def->path;
+      info.kind = SymbolKind::File;
+      return info;
+    }
+    default: {
+      SymbolInformation info;
+      eachEntityDef(db, sym, [&](const auto &def) {
+        if (detailed)
+          info.name = def.detailed_name;
+        else
+          info.name = def.name(true);
+        info.kind = def.kind;
+        return false;
+      });
+      return info;
+    }
   }
 
   return std::nullopt;
@@ -815,8 +783,7 @@ std::vector<SymbolRef> findSymbolsAtLocation(WorkingFile *wfile,
       symbols.begin(), symbols.end(),
       [](const SymbolRef &a, const SymbolRef &b) {
         int t = computeRangeSize(a.range) - computeRangeSize(b.range);
-        if (t)
-          return t < 0;
+        if (t) return t < 0;
         // MacroExpansion
         if ((t = (a.role & Role::Dynamic) - (b.role & Role::Dynamic)))
           return t > 0;
@@ -824,8 +791,7 @@ std::vector<SymbolRef> findSymbolsAtLocation(WorkingFile *wfile,
           return t > 0;
         // operator> orders Var/Func before Type.
         t = static_cast<int>(a.kind) - static_cast<int>(b.kind);
-        if (t)
-          return t > 0;
+        if (t) return t > 0;
         return a.usr < b.usr;
       });
   if (symbols.size() && smallest) {
@@ -839,4 +805,4 @@ std::vector<SymbolRef> findSymbolsAtLocation(WorkingFile *wfile,
 
   return symbols;
 }
-} // namespace ccls
+}  // namespace ccls

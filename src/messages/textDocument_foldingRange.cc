@@ -15,13 +15,12 @@ struct FoldingRange {
 };
 REFLECT_STRUCT(FoldingRange, startLine, startCharacter, endLine, endCharacter,
                kind);
-} // namespace
+}  // namespace
 
 void MessageHandler::textDocument_foldingRange(TextDocumentParam &param,
                                                ReplyOnce &reply) {
   auto [file, wf] = findOrFail(param.textDocument.uri.getPath(), reply);
-  if (!wf)
-    return;
+  if (!wf) return;
   std::vector<FoldingRange> result;
   std::optional<lsRange> ls_range;
 
@@ -37,4 +36,4 @@ void MessageHandler::textDocument_foldingRange(TextDocumentParam &param,
     }
   reply(result);
 }
-} // namespace ccls
+}  // namespace ccls

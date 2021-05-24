@@ -1,12 +1,12 @@
 // Copyright 2017-2018 ccls Authors
 // SPDX-License-Identifier: Apache-2.0
 
+#include <clang/Format/Format.h>
+#include <clang/Tooling/Core/Replacement.h>
+
 #include "message_handler.hh"
 #include "pipeline.hh"
 #include "working_files.hh"
-
-#include <clang/Format/Format.h>
-#include <clang/Tooling/Core/Replacement.h>
 
 namespace ccls {
 using namespace clang;
@@ -15,13 +15,11 @@ namespace {
 llvm::Expected<tooling::Replacements> formatCode(StringRef code, StringRef file,
                                                  tooling::Range range) {
   auto style = format::getStyle("file", file, "LLVM", code, nullptr);
-  if (!style)
-    return style.takeError();
+  if (!style) return style.takeError();
   tooling::Replacements includeReplaces =
       format::sortIncludes(*style, code, {range}, file);
   auto changed = tooling::applyAllReplacements(code, includeReplaces);
-  if (!changed)
-    return changed.takeError();
+  if (!changed) return changed.takeError();
   return includeReplaces.merge(format::reformat(
       *style, *changed,
       tooling::calculateRangesAfterReplacements(includeReplaces, {range}),
@@ -65,13 +63,12 @@ void format(ReplyOnce &reply, WorkingFile *wfile, tooling::Range range) {
     reply.error(ErrorCode::UnknownErrorCode,
                 llvm::toString(replsOrErr.takeError()));
 }
-} // namespace
+}  // namespace
 
 void MessageHandler::textDocument_formatting(DocumentFormattingParam &param,
                                              ReplyOnce &reply) {
   auto [file, wf] = findOrFail(param.textDocument.uri.getPath(), reply);
-  if (!wf)
-    return;
+  if (!wf) return;
   format(reply, wf, {0, (unsigned)wf->buffer_content.size()});
 }
 
@@ -84,8 +81,7 @@ void MessageHandler::textDocument_onTypeFormatting(
   std::string_view code = wf->buffer_content;
   int pos = getOffsetForPosition(param.position, code);
   auto lbrace = code.find_last_of('{', pos);
-  if (lbrace == std::string::npos)
-    lbrace = pos;
+  if (lbrace == std::string::npos) lbrace = pos;
   format(reply, wf, {(unsigned)lbrace, unsigned(pos - lbrace)});
 }
 
@@ -100,4 +96,4 @@ void MessageHandler::textDocument_rangeFormatting(
       end = getOffsetForPosition(param.range.end, code);
   format(reply, wf, {(unsigned)begin, unsigned(end - begin)});
 }
-} // namespace ccls
+}  // namespace ccls

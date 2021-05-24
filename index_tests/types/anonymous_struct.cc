@@ -1,5 +1,7 @@
 union vector3 {
-  struct { float x, y, z; };
+  struct {
+    float x, y, z;
+  };
   float v[3];
 };
 
@@ -23,8 +25,8 @@ OUTPUT:
       "parent_kind": 0,
       "declarations": [],
       "derived": [],
-      "instances": [3348817847649945564, 4821094820988543895, 15292551660437765731],
-      "uses": []
+      "instances": [3348817847649945564, 4821094820988543895,
+15292551660437765731], "uses": []
     }, {
       "usr": 1428566502523368801,
       "detailed_name": "anon struct",

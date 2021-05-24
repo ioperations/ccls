@@ -3,16 +3,17 @@
 
 #pragma once
 
-#include "indexer.hh"
-#include "serializer.hh"
-#include "working_files.hh"
-
 #include <llvm/ADT/DenseMap.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/ADT/StringMap.h>
 
+#include "indexer.hh"
+#include "serializer.hh"
+#include "working_files.hh"
+
 namespace llvm {
-template <> struct DenseMapInfo<ccls::ExtentRef> {
+template <>
+struct DenseMapInfo<ccls::ExtentRef> {
   static inline ccls::ExtentRef getEmptyKey() { return {}; }
   static inline ccls::ExtentRef getTombstoneKey() {
     return {{ccls::Range(), ccls::Usr(-1)}};
@@ -22,7 +23,7 @@ template <> struct DenseMapInfo<ccls::ExtentRef> {
   }
   static bool isEqual(ccls::ExtentRef l, ccls::ExtentRef r) { return l == r; }
 };
-} // namespace llvm
+}  // namespace llvm
 
 namespace ccls {
 struct QueryFile {
@@ -46,14 +47,14 @@ struct QueryFile {
   llvm::DenseMap<ExtentRef, int> symbol2refcnt;
 };
 
-template <typename Q, typename QDef> struct QueryEntity {
+template <typename Q, typename QDef>
+struct QueryEntity {
   using Def = QDef;
   Def *anyDef() {
     Def *ret = nullptr;
     for (auto &i : static_cast<Q *>(this)->def) {
       ret = &i;
-      if (i.spell)
-        break;
+      if (i.spell) break;
     }
     return ret;
   }
@@ -216,42 +217,40 @@ std::vector<SymbolRef> findSymbolsAtLocation(WorkingFile *working_file,
                                              QueryFile *file, Position &ls_pos,
                                              bool smallest = false);
 
-template <typename Fn> void withEntity(DB *db, SymbolIdx sym, Fn &&fn) {
+template <typename Fn>
+void withEntity(DB *db, SymbolIdx sym, Fn &&fn) {
   switch (sym.kind) {
-  case Kind::Invalid:
-  case Kind::File:
-    break;
-  case Kind::Func:
-    fn(db->getFunc(sym));
-    break;
-  case Kind::Type:
-    fn(db->getType(sym));
-    break;
-  case Kind::Var:
-    fn(db->getVar(sym));
-    break;
+    case Kind::Invalid:
+    case Kind::File:
+      break;
+    case Kind::Func:
+      fn(db->getFunc(sym));
+      break;
+    case Kind::Type:
+      fn(db->getType(sym));
+      break;
+    case Kind::Var:
+      fn(db->getVar(sym));
+      break;
   }
 }
 
-template <typename Fn> void eachEntityDef(DB *db, SymbolIdx sym, Fn &&fn) {
+template <typename Fn>
+void eachEntityDef(DB *db, SymbolIdx sym, Fn &&fn) {
   withEntity(db, sym, [&](const auto &entity) {
     for (auto &def : entity.def)
-      if (!fn(def))
-        break;
+      if (!fn(def)) break;
   });
 }
 
 template <typename Fn>
 void eachOccurrence(DB *db, SymbolIdx sym, bool include_decl, Fn &&fn) {
   withEntity(db, sym, [&](const auto &entity) {
-    for (Use use : entity.uses)
-      fn(use);
+    for (Use use : entity.uses) fn(use);
     if (include_decl) {
       for (auto &def : entity.def)
-        if (def.spell)
-          fn(*def.spell);
-      for (Use use : entity.declarations)
-        fn(use);
+        if (def.spell) fn(*def.spell);
+      for (Use use : entity.declarations) fn(use);
     }
   });
 }
@@ -262,8 +261,7 @@ template <typename C, typename Fn>
 void eachDefinedFunc(DB *db, const C &usrs, Fn &&fn) {
   for (Usr usr : usrs) {
     auto &obj = db->getFunc(usr);
-    if (!obj.def.empty())
-      fn(obj);
+    if (!obj.def.empty()) fn(obj);
   }
 }
-} // namespace ccls
+}  // namespace ccls

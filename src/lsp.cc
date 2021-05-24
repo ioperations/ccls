@@ -3,12 +3,12 @@
 
 #include "lsp.hh"
 
-#include "log.hh"
-
 #include <rapidjson/document.h>
+#include <stdio.h>
 
 #include <algorithm>
-#include <stdio.h>
+
+#include "log.hh"
 
 namespace ccls {
 void reflect(JsonReader &vis, RequestId &v) {
@@ -29,15 +29,15 @@ void reflect(JsonReader &vis, RequestId &v) {
 
 void reflect(JsonWriter &visitor, RequestId &value) {
   switch (value.type) {
-  case RequestId::kNone:
-    visitor.null_();
-    break;
-  case RequestId::kInt:
-    visitor.int64(atoll(value.value.c_str()));
-    break;
-  case RequestId::kString:
-    visitor.string(value.value.c_str(), value.value.size());
-    break;
+    case RequestId::kNone:
+      visitor.null_();
+      break;
+    case RequestId::kInt:
+      visitor.int64(atoll(value.value.c_str()));
+      break;
+    case RequestId::kString:
+      visitor.string(value.value.c_str(), value.value.size());
+      break;
   }
 }
 
@@ -52,7 +52,7 @@ void DocumentUri::setPath(const std::string &path) {
   raw_uri = path;
 
   size_t index = raw_uri.find(':');
-  if (index == 1) { // widows drive letters must always be 1 char
+  if (index == 1) {  // widows drive letters must always be 1 char
     raw_uri.replace(raw_uri.begin() + index, raw_uri.begin() + index + 1,
                     "%3A");
   }
@@ -118,12 +118,11 @@ std::string DocumentUri::getPath() const {
     ret[0] = toupper(ret[0]);
   }
 #endif
-  if (g_config)
-    normalizeFolder(ret);
+  if (g_config) normalizeFolder(ret);
   return ret;
 }
 
 std::string Position::toString() const {
   return std::to_string(line) + ":" + std::to_string(character);
 }
-} // namespace ccls
+}  // namespace ccls

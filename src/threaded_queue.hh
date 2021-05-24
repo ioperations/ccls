@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "utils.hh"
-
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
@@ -14,11 +12,16 @@
 #include <tuple>
 #include <utility>
 
+#include "utils.hh"
+
 // std::lock accepts two or more arguments. We define an overload for one
 // argument.
 namespace std {
-template <typename Lockable> void lock(Lockable &l) { l.lock(); }
-} // namespace std
+template <typename Lockable>
+void lock(Lockable &l) {
+  l.lock();
+}
+}  // namespace std
 
 namespace ccls {
 struct BaseThreadQueue {
@@ -26,18 +29,21 @@ struct BaseThreadQueue {
   virtual ~BaseThreadQueue() = default;
 };
 
-template <typename... Queue> struct MultiQueueLock {
+template <typename... Queue>
+struct MultiQueueLock {
   MultiQueueLock(Queue... lockable) : tuple_{lockable...} { lock(); }
   ~MultiQueueLock() { unlock(); }
   void lock() { lock_impl(typename std::index_sequence_for<Queue...>{}); }
   void unlock() { unlock_impl(typename std::index_sequence_for<Queue...>{}); }
 
-private:
-  template <size_t... Is> void lock_impl(std::index_sequence<Is...>) {
+ private:
+  template <size_t... Is>
+  void lock_impl(std::index_sequence<Is...>) {
     std::lock(std::get<Is>(tuple_)->mutex_...);
   }
 
-  template <size_t... Is> void unlock_impl(std::index_sequence<Is...>) {
+  template <size_t... Is>
+  void unlock_impl(std::index_sequence<Is...>) {
     (std::get<Is>(tuple_)->mutex_.unlock(), ...);
   }
 
@@ -49,8 +55,7 @@ struct MultiQueueWaiter {
 
   static bool hasState(std::initializer_list<BaseThreadQueue *> queues) {
     for (BaseThreadQueue *queue : queues) {
-      if (!queue->isEmpty())
-        return true;
+      if (!queue->isEmpty()) return true;
     }
     return false;
   }
@@ -59,8 +64,7 @@ struct MultiQueueWaiter {
   bool wait(std::atomic<bool> &quit, BaseThreadQueue... queues) {
     MultiQueueLock<BaseThreadQueue...> l(queues...);
     while (!quit.load(std::memory_order_relaxed)) {
-      if (hasState({queues...}))
-        return false;
+      if (hasState({queues...})) return false;
       cv.wait(l);
     }
     return true;
@@ -70,14 +74,14 @@ struct MultiQueueWaiter {
   void waitUntil(std::chrono::steady_clock::time_point t,
                  BaseThreadQueue... queues) {
     MultiQueueLock<BaseThreadQueue...> l(queues...);
-    if (!hasState({queues...}))
-      cv.wait_until(l, t);
+    if (!hasState({queues...})) cv.wait_until(l, t);
   }
 };
 
 // A threadsafe-queue. http://stackoverflow.com/a/16075550
-template <class T> struct ThreadedQueue : public BaseThreadQueue {
-public:
+template <class T>
+struct ThreadedQueue : public BaseThreadQueue {
+ public:
   ThreadedQueue() {
     owned_waiter_ = std::make_unique<MultiQueueWaiter>();
     waiter_ = owned_waiter_.get();
@@ -88,7 +92,8 @@ public:
   size_t size() const { return total_count_; }
 
   // Add an element to the queue.
-  template <void (std::deque<T>::*Push)(T &&)> void push(T &&t, bool priority) {
+  template <void (std::deque<T>::*Push)(T &&)>
+  void push(T &&t, bool priority) {
     std::lock_guard<std::mutex> lock(mutex_);
     if (priority)
       (priority_.*Push)(std::move(t));
@@ -137,8 +142,7 @@ public:
       --total_count_;
       return val;
     };
-    if (!priority_.empty())
-      return execute(&priority_);
+    if (!priority_.empty()) return execute(&priority_);
     return execute(&queue_);
   }
 
@@ -152,28 +156,25 @@ public:
       --total_count_;
       return val;
     };
-    if (priority_.size())
-      return execute(&priority_);
-    if (queue_.size())
-      return execute(&queue_);
+    if (priority_.size()) return execute(&priority_);
+    if (queue_.size()) return execute(&queue_);
     return std::nullopt;
   }
 
-  template <typename Fn> void iterate(Fn fn) {
+  template <typename Fn>
+  void iterate(Fn fn) {
     std::lock_guard<std::mutex> lock(mutex_);
-    for (auto &entry : priority_)
-      fn(entry);
-    for (auto &entry : queue_)
-      fn(entry);
+    for (auto &entry : priority_) fn(entry);
+    for (auto &entry : queue_) fn(entry);
   }
 
   mutable std::mutex mutex_;
 
-private:
+ private:
   std::atomic<int> total_count_{0};
   std::deque<T> priority_;
   std::deque<T> queue_;
   MultiQueueWaiter *waiter_;
   std::unique_ptr<MultiQueueWaiter> owned_waiter_;
 };
-} // namespace ccls
+}  // namespace ccls

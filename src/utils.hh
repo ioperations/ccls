@@ -3,12 +3,11 @@
 
 #pragma once
 
-#include <optional>
-#include <string_view>
-
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -22,7 +21,7 @@ struct Matcher {
   std::unique_ptr<Impl> impl;
   std::string pattern;
 
-  Matcher(const std::string &pattern); // throw
+  Matcher(const std::string &pattern);  // throw
   Matcher(Matcher &&) = default;
   ~Matcher();
   bool matches(const std::string &text) const;
@@ -78,25 +77,27 @@ inline void hash_combine(std::size_t &seed, const T &v, Rest... rest) {
   hash_combine(seed, rest...);
 }
 
-#define MAKE_HASHABLE(type, ...)                                               \
-  namespace std {                                                              \
-  template <> struct hash<type> {                                              \
-    std::size_t operator()(const type &t) const {                              \
-      std::size_t ret = 0;                                                     \
-      ccls::hash_combine(ret, __VA_ARGS__);                                    \
-      return ret;                                                              \
-    }                                                                          \
-  };                                                                           \
+#define MAKE_HASHABLE(type, ...)                  \
+  namespace std {                                 \
+  template <>                                     \
+  struct hash<type> {                             \
+    std::size_t operator()(const type &t) const { \
+      std::size_t ret = 0;                        \
+      ccls::hash_combine(ret, __VA_ARGS__);       \
+      return ret;                                 \
+    }                                             \
+  };                                              \
   }
 
 std::string getDefaultResourceDirectory();
 
 // Like std::optional, but the stored data is responsible for containing the
 // empty state. T should define a function `bool T::valid()`.
-template <typename T> class Maybe {
+template <typename T>
+class Maybe {
   T storage;
 
-public:
+ public:
   constexpr Maybe() = default;
   Maybe(const Maybe &) = default;
   Maybe(std::nullopt_t) {}
@@ -117,8 +118,7 @@ public:
   bool valid() const { return storage.valid(); }
   explicit operator bool() const { return valid(); }
   operator std::optional<T>() const {
-    if (valid())
-      return storage;
+    if (valid()) return storage;
     return std::nullopt;
   }
 
@@ -129,10 +129,11 @@ public:
   bool operator!=(const Maybe &o) const { return !(*this == o); }
 };
 
-template <typename T> struct Vec {
+template <typename T>
+struct Vec {
   std::unique_ptr<T[]> a;
   int s = 0;
-#if !(__clang__ || __GNUC__ > 7 || __GNUC__ == 7 && __GNUC_MINOR__ >= 4) ||    \
+#if !(__clang__ || __GNUC__ > 7 || __GNUC__ == 7 && __GNUC_MINOR__ >= 4) || \
     defined(_WIN32)
   // Work around a bug in GCC<7.4 that optional<IndexUpdate> would not be
   // construtible.
@@ -152,4 +153,4 @@ template <typename T> struct Vec {
   const T &operator[](size_t i) const { return a.get()[i]; }
   T &operator[](size_t i) { return a.get()[i]; }
 };
-} // namespace ccls
+}  // namespace ccls

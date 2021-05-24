@@ -3,26 +3,27 @@
 
 #pragma once
 
+#include <clang/Basic/SourceLocation.h>
+#include <clang/Basic/Specifiers.h>
+#include <llvm/ADT/CachedHashString.h>
+#include <llvm/ADT/DenseMap.h>
+#include <stdint.h>
+
+#include <string_view>
+#include <unordered_map>
+#include <vector>
+
 #include "lsp.hh"
 #include "position.hh"
 #include "serializer.hh"
 #include "utils.hh"
 
-#include <clang/Basic/SourceLocation.h>
-#include <clang/Basic/Specifiers.h>
-#include <llvm/ADT/CachedHashString.h>
-#include <llvm/ADT/DenseMap.h>
-
-#include <stdint.h>
-#include <string_view>
-#include <unordered_map>
-#include <vector>
-
 namespace std {
-template <> struct hash<clang::FileID> {
+template <>
+struct hash<clang::FileID> {
   std::size_t operator()(clang::FileID fid) const { return fid.getHashValue(); }
 };
-} // namespace std
+}  // namespace std
 
 namespace ccls {
 using Usr = uint64_t;
@@ -127,9 +128,11 @@ void reflect(BinaryWriter &visitor, SymbolRef &value);
 void reflect(BinaryWriter &visitor, Use &value);
 void reflect(BinaryWriter &visitor, DeclRef &value);
 
-template <typename T> using VectorAdapter = std::vector<T, std::allocator<T>>;
+template <typename T>
+using VectorAdapter = std::vector<T, std::allocator<T>>;
 
-template <typename D> struct NameMixin {
+template <typename D>
+struct NameMixin {
   std::string_view name(bool qualified) const {
     auto self = static_cast<const D *>(this);
     return qualified
@@ -157,7 +160,7 @@ struct FuncDef : NameMixin<FuncDef<V>> {
   // Functions that this function calls.
   V<SymbolRef> callees;
 
-  int file_id = -1; // not serialized
+  int file_id = -1;  // not serialized
   int16_t qual_name_offset = 0;
   int16_t short_name_offset = 0;
   int16_t short_name_size = 0;
@@ -197,7 +200,7 @@ struct TypeDef : NameMixin<TypeDef<V>> {
   // If set, then this is the same underlying type as the given value (ie, this
   // type comes from a using or typedef statement).
   Usr alias_of = 0;
-  int file_id = -1; // not serialized
+  int file_id = -1;  // not serialized
   int16_t qual_name_offset = 0;
   int16_t short_name_offset = 0;
   int16_t short_name_size = 0;
@@ -230,7 +233,7 @@ struct VarDef : NameMixin<VarDef> {
 
   // Type of the variable.
   Usr type = 0;
-  int file_id = -1; // not serialized
+  int file_id = -1;  // not serialized
   int16_t qual_name_offset = 0;
   int16_t short_name_offset = 0;
   int16_t short_name_size = 0;
@@ -334,14 +337,14 @@ struct VFS;
 
 namespace idx {
 void init();
-IndexResult
-index(SemaManager *complete, WorkingFiles *wfiles, VFS *vfs,
-      const std::string &opt_wdir, const std::string &file,
-      const std::vector<const char *> &args,
-      const std::vector<std::pair<std::string, std::string>> &remapped,
-      bool all_linkages, bool &ok);
-} // namespace idx
-} // namespace ccls
+IndexResult index(
+    SemaManager *complete, WorkingFiles *wfiles, VFS *vfs,
+    const std::string &opt_wdir, const std::string &file,
+    const std::vector<const char *> &args,
+    const std::vector<std::pair<std::string, std::string>> &remapped,
+    bool all_linkages, bool &ok);
+}  // namespace idx
+}  // namespace ccls
 
 MAKE_HASHABLE(ccls::SymbolRef, t.range, t.usr, t.kind, t.role);
 MAKE_HASHABLE(ccls::ExtentRef, t.range, t.usr, t.kind, t.role, t.extent);

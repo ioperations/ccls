@@ -3,12 +3,6 @@
 
 #pragma once
 
-#include "clang_tu.hh"
-#include "lsp.hh"
-#include "project.hh"
-#include "threaded_queue.hh"
-#include "working_files.hh"
-
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Frontend/FrontendActions.h>
 #include <clang/Sema/CodeCompleteOptions.h>
@@ -19,6 +13,12 @@
 #include <mutex>
 #include <string>
 #include <vector>
+
+#include "clang_tu.hh"
+#include "lsp.hh"
+#include "project.hh"
+#include "threaded_queue.hh"
+#include "working_files.hh"
 
 namespace ccls {
 struct PreambleData;
@@ -40,7 +40,8 @@ struct Diag : DiagBase {
 TextEdit toTextEdit(const clang::SourceManager &SM, const clang::LangOptions &L,
                     const clang::FixItHint &FixIt);
 
-template <typename K, typename V> struct LruCache {
+template <typename K, typename V>
+struct LruCache {
   std::shared_ptr<V> get(const K &key) {
     for (auto it = items.begin(); it != items.end(); ++it)
       if (it->first == key) {
@@ -61,14 +62,13 @@ template <typename K, typename V> struct LruCache {
     return nullptr;
   }
   void insert(const K &key, std::shared_ptr<V> value) {
-    if ((int)items.size() >= capacity)
-      items.pop_back();
+    if ((int)items.size() >= capacity) items.pop_back();
     items.emplace(items.begin(), key, std::move(value));
   }
   void clear() { items.clear(); }
   void setCapacity(int cap) { capacity = cap; }
 
-private:
+ private:
   std::vector<std::pair<K, std::shared_ptr<V>>> items;
   int capacity = 1;
 };
@@ -106,8 +106,12 @@ struct SemaManager {
              const Position &position,
              std::unique_ptr<clang::CodeCompleteConsumer> Consumer,
              clang::CodeCompleteOptions CCOpts, const OnComplete &on_complete)
-        : id(id), path(path), position(position), consumer(std::move(Consumer)),
-          cc_opts(CCOpts), on_complete(on_complete) {}
+        : id(id),
+          path(path),
+          position(position),
+          consumer(std::move(Consumer)),
+          cc_opts(CCOpts),
+          on_complete(on_complete) {}
 
     RequestId id;
     std::string path;
@@ -161,14 +165,16 @@ struct SemaManager {
 // Cached completion information, so we can give fast completion results when
 // the user erases a character. vscode will resend the completion request if
 // that happens.
-template <typename T> struct CompleteConsumerCache {
+template <typename T>
+struct CompleteConsumerCache {
   std::mutex mutex;
   std::string path;
   std::string line;
   Position position;
   T result;
 
-  template <typename Fn> void withLock(Fn &&fn) {
+  template <typename Fn>
+  void withLock(Fn &&fn) {
     std::lock_guard lock(mutex);
     fn();
   }
@@ -180,4 +186,4 @@ template <typename T> struct CompleteConsumerCache {
                               position.character) == 0;
   }
 };
-} // namespace ccls
+}  // namespace ccls

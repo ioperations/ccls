@@ -1,14 +1,13 @@
-template<class T>
+template <class T>
 class Template {
   void Foo();
 };
 
-template<class T>
+template <class T>
 void Template<T>::Foo() {}
 
-template<>
+template <>
 void Template<void>::Foo() {}
-
 
 /*
 // TODO: usage information on Template is bad.

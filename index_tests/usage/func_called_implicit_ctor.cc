@@ -4,9 +4,7 @@ struct Wrapper {
 
 int called() { return 1; }
 
-Wrapper caller() {
-  return called();
-}
+Wrapper caller() { return called(); }
 
 /*
 OUTPUT:
@@ -50,9 +48,8 @@ OUTPUT:
       "spell": "7:9-7:15|7:1-9:2|2|-1",
       "bases": [],
       "vars": [],
-      "callees": ["8:10-8:16|10544127002917214589|3|16676", "8:10-8:16|468307235068920063|3|16420"],
-      "kind": 12,
-      "parent_kind": 0,
+      "callees": ["8:10-8:16|10544127002917214589|3|16676",
+"8:10-8:16|468307235068920063|3|16420"], "kind": 12, "parent_kind": 0,
       "storage": 0,
       "declarations": [],
       "derived": [],

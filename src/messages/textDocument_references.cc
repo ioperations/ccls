@@ -1,12 +1,12 @@
 // Copyright 2017-2018 ccls Authors
 // SPDX-License-Identifier: Apache-2.0
 
-#include "message_handler.hh"
-#include "query.hh"
-
 #include <llvm/ADT/iterator_range.h>
 
 #include <unordered_set>
+
+#include "message_handler.hh"
+#include "query.hh"
 
 using namespace llvm;
 
@@ -31,18 +31,16 @@ struct ReferenceParam : public TextDocumentPositionParam {
 REFLECT_STRUCT(ReferenceParam::Context, includeDeclaration);
 REFLECT_STRUCT(ReferenceParam, textDocument, position, context, folders, base,
                excludeRole, role);
-} // namespace
+}  // namespace
 
 void MessageHandler::textDocument_references(JsonReader &reader,
                                              ReplyOnce &reply) {
   ReferenceParam param;
   reflect(reader, param);
   auto [file, wf] = findOrFail(param.textDocument.uri.getPath(), reply);
-  if (!wf)
-    return;
+  if (!wf) return;
 
-  for (auto &folder : param.folders)
-    ensureEndsInSlash(folder);
+  for (auto &folder : param.folders) ensureEndsInSlash(folder);
   std::vector<uint8_t> file_set = db->getFileSet(param.folders);
   std::vector<Location> result;
 
@@ -54,8 +52,7 @@ void MessageHandler::textDocument_references(JsonReader &reader,
     std::unordered_set<Usr> seen;
     seen.insert(sym.usr);
     std::vector<Usr> stack{sym.usr};
-    if (sym.kind != Kind::Func)
-      param.base = false;
+    if (sym.kind != Kind::Func) param.base = false;
     while (stack.size()) {
       sym.usr = stack.back();
       stack.pop_back();
@@ -63,8 +60,7 @@ void MessageHandler::textDocument_references(JsonReader &reader,
         if (file_set[use.file_id] &&
             Role(use.role & param.role) == param.role &&
             !(use.role & param.excludeRole) && seen_uses.insert(use).second)
-          if (auto loc = getLsLocation(db, wfiles, use))
-            result.push_back(*loc);
+          if (auto loc = getLsLocation(db, wfiles, use)) result.push_back(*loc);
       };
       withEntity(db, sym, [&](const auto &entity) {
         SymbolKind parent_kind = SymbolKind::Unknown;
@@ -79,14 +75,11 @@ void MessageHandler::textDocument_references(JsonReader &reader,
                 }
             break;
           }
-        for (Use use : entity.uses)
-          fn(use, parent_kind);
+        for (Use use : entity.uses) fn(use, parent_kind);
         if (param.context.includeDeclaration) {
           for (auto &def : entity.def)
-            if (def.spell)
-              fn(*def.spell, parent_kind);
-          for (Use use : entity.declarations)
-            fn(use, parent_kind);
+            if (def.spell) fn(*def.spell, parent_kind);
+          for (Use use : entity.declarations) fn(use, parent_kind);
         }
       });
     }
@@ -122,4 +115,4 @@ void MessageHandler::textDocument_references(JsonReader &reader,
     result.resize(g_config->xref.maxNum);
   reply(result);
 }
-} // namespace ccls
+}  // namespace ccls

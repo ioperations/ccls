@@ -3,6 +3,18 @@
 
 #include "pipeline.hh"
 
+#include <inttypes.h>
+#include <llvm/Support/Path.h>
+#include <llvm/Support/Process.h>
+#include <llvm/Support/Threading.h>
+#include <rapidjson/document.h>
+#include <rapidjson/writer.h>
+
+#include <chrono>
+#include <mutex>
+#include <shared_mutex>
+#include <thread>
+
 #include "config.hh"
 #include "include_complete.hh"
 #include "log.hh"
@@ -13,19 +25,6 @@
 #include "project.hh"
 #include "query.hh"
 #include "sema_manager.hh"
-
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-
-#include <llvm/Support/Path.h>
-#include <llvm/Support/Process.h>
-#include <llvm/Support/Threading.h>
-
-#include <chrono>
-#include <inttypes.h>
-#include <mutex>
-#include <shared_mutex>
-#include <thread>
 #ifndef _WIN32
 #include <unistd.h>
 #endif
@@ -45,7 +44,7 @@ struct WorkDoneProgressCreateParam {
   const char *token = index_progress_token;
 };
 REFLECT_STRUCT(WorkDoneProgressCreateParam, token);
-} // namespace
+}  // namespace
 
 void VFS::clear() {
   std::lock_guard lock(mutex);
@@ -128,8 +127,7 @@ bool cacheInvalid(VFS *vfs, IndexFile *prev, const std::string &path,
       changed = i;
       break;
     }
-  if (changed < 0 && prev->args.size() != args.size())
-    changed = size;
+  if (changed < 0 && prev->args.size() != args.size()) changed = size;
   if (changed >= 0)
     LOG_V(1) << "args changed for " << path
              << (from ? " (via " + *from + ")" : std::string()) << "; old: "
@@ -140,10 +138,10 @@ bool cacheInvalid(VFS *vfs, IndexFile *prev, const std::string &path,
 
 std::string appendSerializationFormat(const std::string &base) {
   switch (g_config->cache.format) {
-  case SerializeFormat::Binary:
-    return base + ".blob";
-  case SerializeFormat::Json:
-    return base + ".json";
+    case SerializeFormat::Binary:
+      return base + ".blob";
+    case SerializeFormat::Json:
+      return base + ".json";
   }
 }
 
@@ -174,16 +172,14 @@ std::unique_ptr<IndexFile> rawCacheLoad(const std::string &path) {
     auto it = g_index.find(path);
     if (it != g_index.end())
       return std::make_unique<IndexFile>(it->second.index);
-    if (g_config->cache.directory.empty())
-      return nullptr;
+    if (g_config->cache.directory.empty()) return nullptr;
   }
 
   std::string cache_path = getCachePath(path);
   std::optional<std::string> file_content = readContent(cache_path);
   std::optional<std::string> serialized_indexed_content =
       readContent(appendSerializationFormat(cache_path));
-  if (!file_content || !serialized_indexed_content)
-    return nullptr;
+  if (!file_content || !serialized_indexed_content) return nullptr;
 
   return ccls::deserialize(g_config->cache.format, path,
                            *serialized_indexed_content, *file_content,
@@ -199,8 +195,7 @@ std::mutex &getFileMutex(const std::string &path) {
 bool indexer_Parse(SemaManager *completion, WorkingFiles *wfiles,
                    Project *project, VFS *vfs, const GroupMatch &matcher) {
   std::optional<IndexRequest> opt_request = index_request->tryPopFront();
-  if (!opt_request)
-    return false;
+  if (!opt_request) return false;
   auto &request = *opt_request;
   bool loud = request.mode != IndexMode::OnChange;
 
@@ -222,10 +217,8 @@ bool indexer_Parse(SemaManager *completion, WorkingFiles *wfiles,
 
   Project::Entry entry =
       project->findEntry(request.path, true, request.must_exist);
-  if (request.must_exist && entry.filename.empty())
-    return true;
-  if (request.args.size())
-    entry.args = request.args;
+  if (request.must_exist && entry.filename.empty()) return true;
+  if (request.args.size()) entry.args = request.args;
   std::string path_to_index = entry.filename;
   std::unique_ptr<IndexFile> prev;
 
@@ -256,16 +249,13 @@ bool indexer_Parse(SemaManager *completion, WorkingFiles *wfiles,
     reparse = 2;
     std::lock_guard lock(vfs->mutex);
     vfs->state[path_to_index].step = 0;
-    if (request.path != path_to_index)
-      vfs->state[request.path].step = 0;
+    if (request.path != path_to_index) vfs->state[request.path].step = 0;
   }
   bool track = g_config->index.trackDependency > 1 ||
                (g_config->index.trackDependency == 1 && request.ts < loaded_ts);
-  if (!reparse && !track)
-    return true;
+  if (!reparse && !track) return true;
 
-  if (reparse < 2)
-    do {
+  if (reparse < 2) do {
       std::unique_lock lock(getFileMutex(path_to_index));
       prev = rawCacheLoad(path_to_index);
       if (!prev || prev->no_linkage < no_linkage ||
@@ -288,13 +278,10 @@ bool indexer_Parse(SemaManager *completion, WorkingFiles *wfiles,
             break;
           }
         }
-      if (reparse == 0)
-        return true;
-      if (reparse == 2)
-        break;
+      if (reparse == 0) return true;
+      if (reparse == 2) break;
 
-      if (vfs->loaded(path_to_index))
-        return true;
+      if (vfs->loaded(path_to_index)) return true;
       LOG_S(INFO) << "load cache for " << path_to_index;
       auto dependencies = prev->dependencies;
       IndexUpdate update = IndexUpdate::createDelta(nullptr, prev.get());
@@ -304,28 +291,23 @@ bool indexer_Parse(SemaManager *completion, WorkingFiles *wfiles,
         std::lock_guard lock1(vfs->mutex);
         VFS::State &st = vfs->state[path_to_index];
         st.loaded++;
-        if (prev->no_linkage)
-          st.step = 2;
+        if (prev->no_linkage) st.step = 2;
       }
       lock.unlock();
 
       for (const auto &dep : dependencies) {
         std::string path = dep.first.val().str();
-        if (!vfs->stamp(path, dep.second, 1))
-          continue;
+        if (!vfs->stamp(path, dep.second, 1)) continue;
         std::lock_guard lock1(getFileMutex(path));
         prev = rawCacheLoad(path);
-        if (!prev)
-          continue;
+        if (!prev) continue;
         {
           std::lock_guard lock2(vfs->mutex);
           VFS::State &st = vfs->state[path];
-          if (st.loaded)
-            continue;
+          if (st.loaded) continue;
           st.loaded++;
           st.timestamp = prev->mtime;
-          if (prev->no_linkage)
-            st.step = 3;
+          if (prev->no_linkage) st.step = 3;
         }
         IndexUpdate update = IndexUpdate::createDelta(nullptr, prev.get());
         on_indexed->pushBack(std::move(update),
@@ -349,8 +331,7 @@ bool indexer_Parse(SemaManager *completion, WorkingFiles *wfiles,
     std::vector<std::pair<std::string, std::string>> remapped;
     if (g_config->index.onChange) {
       std::string content = wfiles->getContent(path_to_index);
-      if (content.size())
-        remapped.emplace_back(path_to_index, content);
+      if (content.size()) remapped.emplace_back(path_to_index, content);
     }
     bool ok;
     auto result =
@@ -380,8 +361,7 @@ bool indexer_Parse(SemaManager *completion, WorkingFiles *wfiles,
       msg += (" error:" + Twine(n_errs) + " " + first_error).toStringRef(tmp);
     if (LOG_V_ENABLED(1)) {
       msg += "\n ";
-      for (const char *arg : entry.args)
-        (msg += ' ') += arg;
+      for (const char *arg : entry.args) (msg += ' ') += arg;
     }
     LOG_S(INFO) << std::string_view(msg.data(), msg.size());
   }
@@ -454,7 +434,7 @@ void quit(SemaManager &manager) {
   no_active_threads.wait(lock, [] { return !active_threads; });
 }
 
-} // namespace
+}  // namespace
 
 void threadEnter() {
   std::lock_guard lock(thread_mtx);
@@ -463,8 +443,7 @@ void threadEnter() {
 
 void threadLeave() {
   std::lock_guard lock(thread_mtx);
-  if (!--active_threads)
-    no_active_threads.notify_one();
+  if (!--active_threads) no_active_threads.notify_one();
 }
 
 void init() {
@@ -484,8 +463,7 @@ void indexer_Main(SemaManager *manager, VFS *vfs, Project *project,
   GroupMatch matcher(g_config->index.whitelist, g_config->index.blacklist);
   while (true)
     if (!indexer_Parse(manager, wfiles, project, vfs, matcher))
-      if (indexer_waiter->wait(g_quit, index_request))
-        break;
+      if (indexer_waiter->wait(g_quit, index_request)) break;
 }
 
 void main_OnIndexed(DB *db, WorkingFiles *wfiles, IndexUpdate *update) {
@@ -495,8 +473,7 @@ void main_OnIndexed(DB *db, WorkingFiles *wfiles, IndexUpdate *update) {
     std::lock_guard lock(wfiles->mutex);
     for (auto &[f, wf] : wfiles->files) {
       std::string path = lowerPathIfInsensitive(f);
-      if (db->name2file_id.find(path) == db->name2file_id.end())
-        continue;
+      if (db->name2file_id.find(path) == db->name2file_id.end()) continue;
       QueryFile &file = db->files[db->name2file_id[path]];
       emitSemanticHighlight(db, wf.get(), file);
     }
@@ -532,11 +509,9 @@ void launchStdin() {
       str.clear();
       while (true) {
         int c = getchar();
-        if (c == EOF)
-          goto quit;
+        if (c == EOF) goto quit;
         if (c == '\n') {
-          if (str.empty())
-            break;
+          if (str.empty()) break;
           if (!str.compare(0, kContentLength.size(), kContentLength))
             len = atoi(str.c_str() + kContentLength.size());
           str.clear();
@@ -548,8 +523,7 @@ void launchStdin() {
       str.resize(len);
       for (int i = 0; i < len; ++i) {
         int c = getchar();
-        if (c == EOF)
-          goto quit;
+        if (c == EOF) goto quit;
         str[i] = c;
       }
 
@@ -571,8 +545,7 @@ void launchStdin() {
         LOG_V(2) << "receive RequestMessage: " << id.value << " " << method;
       else
         LOG_V(2) << "receive NotificationMessage " << method;
-      if (method.empty())
-        continue;
+      if (method.empty()) continue;
       received_exit = method == "exit";
       // g_config is not available before "initialize". Use 0 in that case.
       on_request->pushBack(
@@ -580,8 +553,7 @@ void launchStdin() {
            chrono::steady_clock::now() +
                chrono::milliseconds(g_config ? g_config->request.timeout : 0)});
 
-      if (received_exit)
-        break;
+      if (received_exit) break;
     }
 
   quit:
@@ -610,8 +582,7 @@ void launchStdout() {
         llvm::outs() << "Content-Length: " << s.size() << "\r\n\r\n" << s;
         llvm::outs().flush();
       }
-      if (stdout_waiter->wait(g_quit, for_stdout))
-        break;
+      if (stdout_waiter->wait(g_quit, for_stdout)) break;
     }
     threadLeave();
   }).detach();
@@ -662,8 +633,7 @@ void mainLoop() {
       handler.overdue = true;
       while (backlog.size()) {
         if (backlog[0].backlog_path.size()) {
-          if (now < backlog[0].deadline)
-            break;
+          if (now < backlog[0].deadline) break;
           handler.run(backlog[0]);
           path2backlog[backlog[0].backlog_path].pop_front();
         }
@@ -674,8 +644,7 @@ void mainLoop() {
 
     std::vector<InMessage> messages = on_request->dequeueAll();
     bool did_work = messages.size();
-    for (InMessage &message : messages)
-      try {
+    for (InMessage &message : messages) try {
         handler.run(message);
       } catch (NotIndexed &ex) {
         backlog.push_back(std::move(message));
@@ -686,8 +655,7 @@ void mainLoop() {
     bool indexed = false;
     for (int i = 20; i--;) {
       std::optional<IndexUpdate> update = on_indexed->tryPopFront();
-      if (!update)
-        break;
+      if (!update) break;
       did_work = true;
       indexed = true;
       main_OnIndexed(&db, &wfiles, &*update);
@@ -744,8 +712,7 @@ void mainLoop() {
 
     if (did_work) {
       has_indexed |= indexed;
-      if (g_quit.load(std::memory_order_relaxed))
-        break;
+      if (g_quit.load(std::memory_order_relaxed)) break;
     } else {
       if (has_indexed) {
         freeUnusedMemory();
@@ -794,19 +761,16 @@ void standalone(const std::string &root) {
       printf("\rcompleted: %4" PRId64 "/%" PRId64, completed, enqueued);
       fflush(stdout);
     }
-    if (completed == enqueued)
-      break;
+    if (completed == enqueued) break;
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
-  if (tty)
-    puts("");
+  if (tty) puts("");
   quit(manager);
 }
 
 void index(const std::string &path, const std::vector<const char *> &args,
            IndexMode mode, bool must_exist, RequestId id) {
-  if (!path.empty())
-    stats.enqueued++;
+  if (!path.empty()) stats.enqueued++;
   index_request->pushBack({path, args, mode, must_exist, std::move(id)},
                           mode != IndexMode::Background);
 }
@@ -822,8 +786,7 @@ std::optional<std::string> loadIndexedContent(const std::string &path) {
   if (g_config->cache.directory.empty()) {
     std::shared_lock lock(g_index_mutex);
     auto it = g_index.find(path);
-    if (it == g_index.end())
-      return {};
+    if (it == g_index.end()) return {};
     return it->second.content;
   }
   return readContent(getCachePath(path));
@@ -860,22 +823,21 @@ static void reply(const RequestId &id, const char *key,
   w.String("2.0");
   w.Key("id");
   switch (id.type) {
-  case RequestId::kNone:
-    w.Null();
-    break;
-  case RequestId::kInt:
-    w.Int64(atoll(id.value.c_str()));
-    break;
-  case RequestId::kString:
-    w.String(id.value.c_str(), id.value.size());
-    break;
+    case RequestId::kNone:
+      w.Null();
+      break;
+    case RequestId::kInt:
+      w.Int64(atoll(id.value.c_str()));
+      break;
+    case RequestId::kString:
+      w.String(id.value.c_str(), id.value.size());
+      break;
   }
   w.Key(key);
   JsonWriter writer(&w);
   fn(writer);
   w.EndObject();
-  if (id.valid())
-    LOG_V(2) << "respond to RequestMessage: " << id.value;
+  if (id.valid()) LOG_V(2) << "respond to RequestMessage: " << id.value;
   for_stdout->pushBack(output.GetString());
 }
 
@@ -887,5 +849,5 @@ void replyError(const RequestId &id,
                 const std::function<void(JsonWriter &)> &fn) {
   reply(id, "error", fn);
 }
-} // namespace pipeline
-} // namespace ccls
+}  // namespace pipeline
+}  // namespace ccls

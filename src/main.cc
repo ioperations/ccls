@@ -1,13 +1,6 @@
 // Copyright 2017-2018 ccls Authors
 // SPDX-License-Identifier: Apache-2.0
 
-#include "log.hh"
-#include "pipeline.hh"
-#include "platform.hh"
-#include "serializer.hh"
-#include "test.hh"
-#include "working_files.hh"
-
 #include <clang/Basic/Version.h>
 #include <llvm/Support/CommandLine.h>
 #include <llvm/Support/CrashRecoveryContext.h>
@@ -15,15 +8,21 @@
 #include <llvm/Support/Process.h>
 #include <llvm/Support/Program.h>
 #include <llvm/Support/Signals.h>
-
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
-
 #include <stdio.h>
 #include <stdlib.h>
+
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "log.hh"
+#include "pipeline.hh"
+#include "platform.hh"
+#include "serializer.hh"
+#include "test.hh"
+#include "working_files.hh"
 
 using namespace ccls;
 using namespace llvm;
@@ -54,7 +53,7 @@ opt<bool> opt_log_file_append("log-file-append", desc("append to log file"),
 
 void closeLog() { fclose(ccls::log::file); }
 
-} // namespace
+}  // namespace
 
 int main(int argc, char **argv) {
   traceMe();
@@ -78,8 +77,7 @@ int main(int argc, char **argv) {
 
   pipeline::init();
   const char *env = getenv("CCLS_CRASH_RECOVERY");
-  if (!env || strcmp(env, "0") != 0)
-    CrashRecoveryContext::Enable();
+  if (!env || strcmp(env, "0") != 0) CrashRecoveryContext::Enable();
 
   bool language_server = true;
 

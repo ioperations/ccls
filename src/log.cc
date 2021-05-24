@@ -5,12 +5,12 @@
 
 #include <llvm/ADT/SmallString.h>
 #include <llvm/Support/Threading.h>
-
-#include <iomanip>
-#include <mutex>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#include <iomanip>
+#include <mutex>
 
 namespace ccls::log {
 static std::mutex mtx;
@@ -36,8 +36,7 @@ Message::Message(Verbosity verbosity, const char *file, int line)
   }
   {
     const char *p = strrchr(file, '/');
-    if (p)
-      file = p + 1;
+    if (p) file = p + 1;
     stream_ << std::right << std::setw(15) << file << ':' << std::left
             << std::setw(3) << line;
   }
@@ -55,13 +54,11 @@ Message::Message(Verbosity verbosity, const char *file, int line)
 }
 
 Message::~Message() {
-  if (!file)
-    return;
+  if (!file) return;
   std::lock_guard<std::mutex> lock(mtx);
   stream_ << '\n';
   fputs(stream_.str().c_str(), file);
   fflush(file);
-  if (verbosity_ == Verbosity_FATAL)
-    abort();
+  if (verbosity_ == Verbosity_FATAL) abort();
 }
-} // namespace ccls::log
+}  // namespace ccls::log

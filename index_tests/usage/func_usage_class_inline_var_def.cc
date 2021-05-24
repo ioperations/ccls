@@ -1,6 +1,4 @@
-static int helper() {
-  return 5;
-}
+static int helper() { return 5; }
 
 class Foo {
   int x = helper();

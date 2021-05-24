@@ -2,9 +2,7 @@
 
 bool called(bool a, bool b);
 
-void caller() {
-  MACRO_CALL(called(true, true));
-}
+void caller() { MACRO_CALL(called(true, true)); }
 
 /*
 OUTPUT:

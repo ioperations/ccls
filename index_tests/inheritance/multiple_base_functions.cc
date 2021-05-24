@@ -1,11 +1,11 @@
 struct Base0 {
-  virtual ~Base0() { }
+  virtual ~Base0() {}
 };
 struct Base1 {
-  virtual ~Base1() { }
+  virtual ~Base1() {}
 };
 struct Derived : Base0, Base1 {
-  ~Derived() override { }
+  ~Derived() override {}
 };
 
 /*

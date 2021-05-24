@@ -3,21 +3,20 @@
 
 #include "serializer.hh"
 
-#include "filesystem.hh"
-#include "indexer.hh"
-#include "log.hh"
-#include "message_handler.hh"
-
-#include <rapidjson/document.h>
-#include <rapidjson/prettywriter.h>
-
 #include <llvm/ADT/CachedHashString.h>
 #include <llvm/ADT/DenseSet.h>
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/Support/Allocator.h>
+#include <rapidjson/document.h>
+#include <rapidjson/prettywriter.h>
 
 #include <mutex>
 #include <stdexcept>
+
+#include "filesystem.hh"
+#include "indexer.hh"
+#include "log.hh"
+#include "message_handler.hh"
 
 using namespace llvm;
 
@@ -26,8 +25,7 @@ bool gTestOutputMode = false;
 namespace ccls {
 
 void JsonReader::iterArray(llvm::function_ref<void()> fn) {
-  if (!m->IsArray())
-    throw std::invalid_argument("array");
+  if (!m->IsArray()) throw std::invalid_argument("array");
   // Use "0" to indicate any element for now.
   path_.push_back("0");
   for (auto &entry : m->GetArray()) {
@@ -158,8 +156,7 @@ void reflect(JsonWriter &vis, std::unordered_map<Usr, V> &v) {
   std::sort(xs.begin(), xs.end(),
             [](const auto &a, const auto &b) { return a.first < b.first; });
   vis.startArray();
-  for (auto &it : xs)
-    reflect(vis, it.second);
+  for (auto &it : xs) reflect(vis, it.second);
   vis.endArray();
 }
 template <typename V>
@@ -173,8 +170,7 @@ void reflect(BinaryReader &vis, std::unordered_map<Usr, V> &v) {
 template <typename V>
 void reflect(BinaryWriter &vis, std::unordered_map<Usr, V> &v) {
   vis.varUInt(v.size());
-  for (auto &it : v)
-    reflect(vis, it.second);
+  for (auto &it : v) reflect(vis, it.second);
 }
 
 // Used by IndexFile::dependencies.
@@ -186,7 +182,7 @@ void reflect(JsonReader &vis, DenseMap<CachedHashStringRef, int64_t> &v) {
 void reflect(JsonWriter &vis, DenseMap<CachedHashStringRef, int64_t> &v) {
   vis.startObject();
   for (auto &it : v) {
-    vis.m->Key(it.first.val().data()); // llvm 8 -> data()
+    vis.m->Key(it.first.val().data());  // llvm 8 -> data()
     vis.m->Int64(it.second);
   }
   vis.endObject();
@@ -208,7 +204,8 @@ void reflect(BinaryWriter &vis, DenseMap<CachedHashStringRef, int64_t> &v) {
   }
 }
 
-template <typename Vis> void reflect(Vis &vis, IndexInclude &v) {
+template <typename Vis>
+void reflect(Vis &vis, IndexInclude &v) {
   reflectMemberStart(vis);
   REFLECT_MEMBER(line);
   REFLECT_MEMBER(resolved_path);
@@ -219,8 +216,7 @@ void reflect(JsonWriter &vis, IndexInclude &v) {
   REFLECT_MEMBER(line);
   if (gTestOutputMode) {
     std::string basename(llvm::sys::path::filename(v.resolved_path));
-    if (v.resolved_path[0] != '&')
-      basename = "&" + basename;
+    if (v.resolved_path[0] != '&') basename = "&" + basename;
     REFLECT_MEMBER2("resolved_path", basename);
   } else {
     REFLECT_MEMBER(resolved_path);
@@ -236,8 +232,7 @@ void reflectHoverAndComments(JsonReader &vis, Def &def) {
 template <typename Def>
 void reflectHoverAndComments(JsonWriter &vis, Def &def) {
   // Don't emit empty hover and comments in JSON test mode.
-  if (!gTestOutputMode || def.hover[0])
-    reflectMember(vis, "hover", def.hover);
+  if (!gTestOutputMode || def.hover[0]) reflectMember(vis, "hover", def.hover);
   if (!gTestOutputMode || def.comments[0])
     reflectMember(vis, "comments", def.comments);
 }
@@ -252,7 +247,8 @@ void reflectHoverAndComments(BinaryWriter &vis, Def &def) {
   reflect(vis, def.comments);
 }
 
-template <typename Def> void reflectShortName(JsonReader &vis, Def &def) {
+template <typename Def>
+void reflectShortName(JsonReader &vis, Def &def) {
   if (gTestOutputMode) {
     std::string short_name;
     reflectMember(vis, "short_name", short_name);
@@ -265,7 +261,8 @@ template <typename Def> void reflectShortName(JsonReader &vis, Def &def) {
     reflectMember(vis, "short_name_size", def.short_name_size);
   }
 }
-template <typename Def> void reflectShortName(JsonWriter &vis, Def &def) {
+template <typename Def>
+void reflectShortName(JsonWriter &vis, Def &def) {
   if (gTestOutputMode) {
     std::string_view short_name(def.detailed_name + def.short_name_offset,
                                 def.short_name_size);
@@ -275,16 +272,19 @@ template <typename Def> void reflectShortName(JsonWriter &vis, Def &def) {
     reflectMember(vis, "short_name_size", def.short_name_size);
   }
 }
-template <typename Def> void reflectShortName(BinaryReader &vis, Def &def) {
+template <typename Def>
+void reflectShortName(BinaryReader &vis, Def &def) {
   reflect(vis, def.short_name_offset);
   reflect(vis, def.short_name_size);
 }
-template <typename Def> void reflectShortName(BinaryWriter &vis, Def &def) {
+template <typename Def>
+void reflectShortName(BinaryWriter &vis, Def &def) {
   reflect(vis, def.short_name_offset);
   reflect(vis, def.short_name_size);
 }
 
-template <typename TVisitor> void reflect1(TVisitor &vis, IndexFunc &v) {
+template <typename TVisitor>
+void reflect1(TVisitor &vis, IndexFunc &v) {
   reflectMemberStart(vis);
   REFLECT_MEMBER2("usr", v.usr);
   REFLECT_MEMBER2("detailed_name", v.def.detailed_name);
@@ -309,7 +309,8 @@ void reflect(JsonWriter &vis, IndexFunc &v) { reflect1(vis, v); }
 void reflect(BinaryReader &vis, IndexFunc &v) { reflect1(vis, v); }
 void reflect(BinaryWriter &vis, IndexFunc &v) { reflect1(vis, v); }
 
-template <typename Vis> void reflect1(Vis &vis, IndexType &v) {
+template <typename Vis>
+void reflect1(Vis &vis, IndexType &v) {
   reflectMemberStart(vis);
   REFLECT_MEMBER2("usr", v.usr);
   REFLECT_MEMBER2("detailed_name", v.def.detailed_name);
@@ -336,7 +337,8 @@ void reflect(JsonWriter &vis, IndexType &v) { reflect1(vis, v); }
 void reflect(BinaryReader &vis, IndexType &v) { reflect1(vis, v); }
 void reflect(BinaryWriter &vis, IndexType &v) { reflect1(vis, v); }
 
-template <typename TVisitor> void reflect1(TVisitor &vis, IndexVar &v) {
+template <typename TVisitor>
+void reflect1(TVisitor &vis, IndexVar &v) {
   reflectMemberStart(vis);
   REFLECT_MEMBER2("usr", v.usr);
   REFLECT_MEMBER2("detailed_name", v.def.detailed_name);
@@ -359,7 +361,8 @@ void reflect(BinaryReader &vis, IndexVar &v) { reflect1(vis, v); }
 void reflect(BinaryWriter &vis, IndexVar &v) { reflect1(vis, v); }
 
 // IndexFile
-template <typename TVisitor> void reflect1(TVisitor &vis, IndexFile &v) {
+template <typename TVisitor>
+void reflect1(TVisitor &vis, IndexFile &v) {
   reflectMemberStart(vis);
   if (!gTestOutputMode) {
     REFLECT_MEMBER(mtime);
@@ -389,18 +392,17 @@ void reflect(JsonReader &vis, SerializeFormat &v) {
 
 void reflect(JsonWriter &vis, SerializeFormat &v) {
   switch (v) {
-  case SerializeFormat::Binary:
-    vis.string("binary");
-    break;
-  case SerializeFormat::Json:
-    vis.string("json");
-    break;
+    case SerializeFormat::Binary:
+      vis.string("binary");
+      break;
+    case SerializeFormat::Json:
+      vis.string("json");
+      break;
   }
 }
 
 void reflectMemberStart(JsonReader &vis) {
-  if (!vis.m->IsObject())
-    throw std::invalid_argument("object");
+  if (!vis.m->IsObject()) throw std::invalid_argument("object");
 }
 
 static BumpPtrAllocator alloc;
@@ -408,8 +410,7 @@ static DenseSet<CachedHashStringRef> strings;
 static std::mutex allocMutex;
 
 CachedHashStringRef internH(StringRef s) {
-  if (s.empty())
-    s = "";
+  if (s.empty()) s = "";
   CachedHashString hs(s);
   std::lock_guard lock(allocMutex);
   auto r = strings.insert(hs);
@@ -426,90 +427,85 @@ const char *intern(StringRef s) { return internH(s).val().data(); }
 
 std::string serialize(SerializeFormat format, IndexFile &file) {
   switch (format) {
-  case SerializeFormat::Binary: {
-    BinaryWriter writer;
-    int major = IndexFile::kMajorVersion;
-    int minor = IndexFile::kMinorVersion;
-    reflect(writer, major);
-    reflect(writer, minor);
-    reflectFile(writer, file);
-    return writer.take();
-  }
-  case SerializeFormat::Json: {
-    rapidjson::StringBuffer output;
-    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(output);
-    writer.SetFormatOptions(
-        rapidjson::PrettyFormatOptions::kFormatSingleLineArray);
-    writer.SetIndent(' ', 2);
-    JsonWriter json_writer(&writer);
-    if (!gTestOutputMode) {
-      std::string version = std::to_string(IndexFile::kMajorVersion);
-      for (char c : version)
-        output.Put(c);
-      output.Put('\n');
+    case SerializeFormat::Binary: {
+      BinaryWriter writer;
+      int major = IndexFile::kMajorVersion;
+      int minor = IndexFile::kMinorVersion;
+      reflect(writer, major);
+      reflect(writer, minor);
+      reflectFile(writer, file);
+      return writer.take();
     }
-    reflectFile(json_writer, file);
-    return output.GetString();
-  }
+    case SerializeFormat::Json: {
+      rapidjson::StringBuffer output;
+      rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(output);
+      writer.SetFormatOptions(
+          rapidjson::PrettyFormatOptions::kFormatSingleLineArray);
+      writer.SetIndent(' ', 2);
+      JsonWriter json_writer(&writer);
+      if (!gTestOutputMode) {
+        std::string version = std::to_string(IndexFile::kMajorVersion);
+        for (char c : version) output.Put(c);
+        output.Put('\n');
+      }
+      reflectFile(json_writer, file);
+      return output.GetString();
+    }
   }
   return "";
 }
 
-std::unique_ptr<IndexFile>
-deserialize(SerializeFormat format, const std::string &path,
-            const std::string &serialized_index_content,
-            const std::string &file_content,
-            std::optional<int> expected_version) {
-  if (serialized_index_content.empty())
-    return nullptr;
+std::unique_ptr<IndexFile> deserialize(
+    SerializeFormat format, const std::string &path,
+    const std::string &serialized_index_content,
+    const std::string &file_content, std::optional<int> expected_version) {
+  if (serialized_index_content.empty()) return nullptr;
 
   std::unique_ptr<IndexFile> file;
   switch (format) {
-  case SerializeFormat::Binary: {
-    try {
-      int major, minor;
-      if (serialized_index_content.size() < 8)
-        throw std::invalid_argument("Invalid");
-      BinaryReader reader(serialized_index_content);
-      reflect(reader, major);
-      reflect(reader, minor);
-      if (major != IndexFile::kMajorVersion ||
-          minor != IndexFile::kMinorVersion)
-        throw std::invalid_argument("Invalid version");
-      file = std::make_unique<IndexFile>(path, file_content, false);
-      reflectFile(reader, *file);
-    } catch (std::invalid_argument &e) {
-      LOG_S(INFO) << "failed to deserialize '" << path << "': " << e.what();
-      return nullptr;
-    }
-    break;
-  }
-  case SerializeFormat::Json: {
-    rapidjson::Document reader;
-    if (gTestOutputMode || !expected_version) {
-      reader.Parse(serialized_index_content.c_str());
-    } else {
-      const char *p = strchr(serialized_index_content.c_str(), '\n');
-      if (!p)
+    case SerializeFormat::Binary: {
+      try {
+        int major, minor;
+        if (serialized_index_content.size() < 8)
+          throw std::invalid_argument("Invalid");
+        BinaryReader reader(serialized_index_content);
+        reflect(reader, major);
+        reflect(reader, minor);
+        if (major != IndexFile::kMajorVersion ||
+            minor != IndexFile::kMinorVersion)
+          throw std::invalid_argument("Invalid version");
+        file = std::make_unique<IndexFile>(path, file_content, false);
+        reflectFile(reader, *file);
+      } catch (std::invalid_argument &e) {
+        LOG_S(INFO) << "failed to deserialize '" << path << "': " << e.what();
         return nullptr;
-      if (atoi(serialized_index_content.c_str()) != *expected_version)
-        return nullptr;
-      reader.Parse(p + 1);
+      }
+      break;
     }
-    if (reader.HasParseError())
-      return nullptr;
+    case SerializeFormat::Json: {
+      rapidjson::Document reader;
+      if (gTestOutputMode || !expected_version) {
+        reader.Parse(serialized_index_content.c_str());
+      } else {
+        const char *p = strchr(serialized_index_content.c_str(), '\n');
+        if (!p) return nullptr;
+        if (atoi(serialized_index_content.c_str()) != *expected_version)
+          return nullptr;
+        reader.Parse(p + 1);
+      }
+      if (reader.HasParseError()) return nullptr;
 
-    file = std::make_unique<IndexFile>(path, file_content, false);
-    JsonReader json_reader{&reader};
-    try {
-      reflectFile(json_reader, *file);
-    } catch (std::invalid_argument &e) {
-      LOG_S(INFO) << "'" << path << "': failed to deserialize "
-                  << json_reader.getPath() << "." << e.what();
-      return nullptr;
+      file = std::make_unique<IndexFile>(path, file_content, false);
+      JsonReader json_reader{&reader};
+      try {
+        reflectFile(json_reader, *file);
+      } catch (std::invalid_argument &e) {
+        LOG_S(INFO) << "'" << path << "': failed to deserialize "
+                    << json_reader.getPath() << "." << e.what();
+        return nullptr;
+      }
+      break;
     }
-    break;
-  }
   }
 
   // Restore non-serialized state.
@@ -523,8 +519,7 @@ deserialize(SerializeFormat format, const std::string &path,
       args.push_back(intern(s));
     }
     file->args = std::move(args);
-    for (auto &[_, path] : file->lid2path)
-      doPathMapping(path);
+    for (auto &[_, path] : file->lid2path) doPathMapping(path);
     for (auto &include : file->includes) {
       std::string p(include.resolved_path);
       doPathMapping(p);
@@ -540,4 +535,4 @@ deserialize(SerializeFormat format, const std::string &path,
   }
   return file;
 }
-} // namespace ccls
+}  // namespace ccls

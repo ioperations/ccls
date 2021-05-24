@@ -24,27 +24,20 @@ OUTPUT:
       "spell": "1:6-1:9|1:1-12:2|2|-1",
       "bases": [],
       "vars": [12666114896600231317, 2981279427664991319],
-      "callees": ["9:14-9:15|17926497908620168464|3|16420", "10:14-10:15|17926497908620168464|3|16420", "11:14-11:15|17926497908620168464|3|16420"],
-      "kind": 12,
-      "parent_kind": 0,
+      "callees": ["9:14-9:15|17926497908620168464|3|16420",
+"10:14-10:15|17926497908620168464|3|16420",
+"11:14-11:15|17926497908620168464|3|16420"], "kind": 12, "parent_kind": 0,
       "storage": 0,
       "declarations": [],
       "derived": [],
       "uses": []
     }, {
       "usr": 17926497908620168464,
-      "detailed_name": "inline void foo()::(anon class)::operator()(int y) const",
-      "qual_name_offset": 12,
-      "short_name": "operator()",
-      "bases": [],
-      "vars": [],
-      "callees": [],
-      "kind": 6,
-      "parent_kind": 0,
-      "storage": 0,
-      "declarations": [],
-      "derived": [],
-      "uses": ["9:14-9:15|16420|-1", "10:14-10:15|16420|-1", "11:14-11:15|16420|-1"]
+      "detailed_name": "inline void foo()::(anon class)::operator()(int y)
+const", "qual_name_offset": 12, "short_name": "operator()", "bases": [], "vars":
+[], "callees": [], "kind": 6, "parent_kind": 0, "storage": 0, "declarations":
+[], "derived": [], "uses": ["9:14-9:15|16420|-1", "10:14-10:15|16420|-1",
+"11:14-11:15|16420|-1"]
     }],
   "usr2type": [{
       "usr": 53,

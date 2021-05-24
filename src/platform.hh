@@ -17,4 +17,4 @@ void freeUnusedMemory();
 void traceMe();
 
 void spawnThread(void *(*fn)(void *), void *arg);
-} // namespace ccls
+}  // namespace ccls

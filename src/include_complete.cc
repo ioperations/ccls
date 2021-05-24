@@ -3,15 +3,15 @@
 
 #include "include_complete.hh"
 
-#include "filesystem.hh"
-#include "platform.hh"
-#include "project.hh"
-
 #include <llvm/ADT/Twine.h>
 #include <llvm/Support/Threading.h>
 #include <llvm/Support/Timer.h>
 
 #include <unordered_set>
+
+#include "filesystem.hh"
+#include "platform.hh"
+#include "project.hh"
 using namespace llvm;
 
 #include <thread>
@@ -39,11 +39,9 @@ size_t trimCommonPathPrefix(const std::string &result,
   std::string s = result, t = trimmer;
   std::transform(s.begin(), s.end(), s.begin(), ::tolower);
   std::transform(t.begin(), t.end(), t.begin(), ::tolower);
-  if (s.compare(0, t.size(), t) == 0)
-    return t.size();
+  if (s.compare(0, t.size(), t) == 0) return t.size();
 #else
-  if (result.compare(0, trimmer.size(), trimmer) == 0)
-    return trimmer.size();
+  if (result.compare(0, trimmer.size(), trimmer) == 0) return trimmer.size();
 #endif
   return 0;
 }
@@ -62,7 +60,7 @@ int trimPath(Project *project, std::string &path) {
 CompletionItem buildCompletionItem(const std::string &path, int kind) {
   CompletionItem item;
   item.label = elideLongPath(path);
-  item.detail = path; // the include path, used in de-duplicating
+  item.detail = path;  // the include path, used in de-duplicating
   item.textEdit.newText = path;
   item.insertTextFormat = InsertTextFormat::PlainText;
   item.kind = CompletionItemKind::File;
@@ -70,7 +68,7 @@ CompletionItem buildCompletionItem(const std::string &path, int kind) {
   item.priority_ = 0;
   return item;
 }
-} // namespace
+}  // namespace
 
 IncludeComplete::IncludeComplete(Project *project)
     : is_scanning(false), project_(project) {}
@@ -82,8 +80,7 @@ IncludeComplete::~IncludeComplete() {
 }
 
 void IncludeComplete::rescan() {
-  if (is_scanning || LLVM_VERSION_MAJOR >= 8)
-    return;
+  if (is_scanning || LLVM_VERSION_MAJOR >= 8) return;
 
   completion_items.clear();
   absolute_path_to_completion_item.clear();
@@ -103,8 +100,7 @@ void IncludeComplete::rescan() {
         const std::string &search = search_kind.first;
         int kind = search_kind.second;
         assert(search.back() == '/');
-        if (match_ && !match_->matches(search))
-          return;
+        if (match_ && !match_->matches(search)) return;
         bool include_cpp = search.find("include/c++") != std::string::npos;
 
         std::vector<CompletionCandidate> results;
@@ -114,12 +110,9 @@ void IncludeComplete::rescan() {
               bool ok = include_cpp;
               for (StringRef suffix :
                    g_config->completion.include.suffixWhitelist)
-                if (StringRef(path).endswith(suffix))
-                  ok = true;
-              if (!ok)
-                return;
-              if (match_ && !match_->matches(search + path))
-                return;
+                if (StringRef(path).endswith(suffix)) ok = true;
+              if (!ok) return;
+              if (match_ && !match_->matches(search + path)) return;
 
               CompletionCandidate candidate;
               candidate.absolute_path = search + path;
@@ -155,20 +148,16 @@ void IncludeComplete::insertCompletionItem(const std::string &absolute_path,
 void IncludeComplete::addFile(const std::string &path) {
   bool ok = false;
   for (StringRef suffix : g_config->completion.include.suffixWhitelist)
-    if (StringRef(path).endswith(suffix))
-      ok = true;
-  if (!ok)
-    return;
-  if (match_ && !match_->matches(path))
-    return;
+    if (StringRef(path).endswith(suffix)) ok = true;
+  if (!ok) return;
+  if (match_ && !match_->matches(path)) return;
 
   std::string trimmed_path = path;
   int kind = trimPath(project_, trimmed_path);
   CompletionItem item = buildCompletionItem(trimmed_path, kind);
 
   std::unique_lock<std::mutex> lock(completion_items_mutex, std::defer_lock);
-  if (is_scanning)
-    lock.lock();
+  if (is_scanning) lock.lock();
   insertCompletionItem(path, std::move(item));
 }
 
@@ -178,8 +167,7 @@ IncludeComplete::findCompletionItemForAbsolutePath(
   std::lock_guard<std::mutex> lock(completion_items_mutex);
 
   auto it = absolute_path_to_completion_item.find(absolute_path);
-  if (it == absolute_path_to_completion_item.end())
-    return std::nullopt;
+  if (it == absolute_path_to_completion_item.end()) return std::nullopt;
   return completion_items[it->second];
 }
-} // namespace ccls
+}  // namespace ccls

@@ -2,21 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #if defined(_WIN32)
-#include "platform.hh"
-
-#include "utils.hh"
-
 #include <Windows.h>
 #include <direct.h>
 #include <fcntl.h>
 #include <io.h>
-
 #include <sys/stat.h>
 #include <sys/types.h>
 
 #include <algorithm>
 #include <string>
 #include <thread>
+
+#include "platform.hh"
+#include "utils.hh"
 
 namespace ccls {
 std::string normalizePath(llvm::StringRef path) {
@@ -43,6 +41,6 @@ void traceMe() {}
 void spawnThread(void *(*fn)(void *), void *arg) {
   std::thread(fn, arg).detach();
 }
-} // namespace ccls
+}  // namespace ccls
 
 #endif

@@ -1,7 +1,4 @@
-enum class Foo {
-  A,
-  B = 20
-};
+enum class Foo { A, B = 20 };
 
 Foo x = Foo::A;
 

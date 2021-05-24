@@ -3,6 +3,17 @@
 
 #include "test.hh"
 
+#include <llvm/ADT/StringRef.h>
+#include <llvm/Config/llvm-config.h>
+#include <rapidjson/document.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <fstream>
+
 #include "filesystem.hh"
 #include "indexer.hh"
 #include "pipeline.hh"
@@ -10,18 +21,6 @@
 #include "sema_manager.hh"
 #include "serializer.hh"
 #include "utils.hh"
-
-#include <llvm/ADT/StringRef.h>
-#include <llvm/Config/llvm-config.h>
-
-#include <rapidjson/document.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
-
-#include <fstream>
-#include <stdio.h>
-#include <stdlib.h>
 
 // The 'diff' utility is available and we can use dprintf(3).
 #if _POSIX_C_SOURCE >= 200809L
@@ -60,8 +59,7 @@ struct TextReplacer {
     for (const Replacement &replacement : replacements) {
       while (true) {
         size_t idx = result.find(replacement.from);
-        if (idx == std::string::npos)
-          break;
+        if (idx == std::string::npos) break;
 
         result.replace(result.begin() + idx,
                        result.begin() + idx + replacement.from.size(),
@@ -114,11 +112,9 @@ void parseTestExpectation(
         continue;
       }
 
-      if (in_output && line.empty())
-        break;
+      if (in_output && line.empty()) break;
 
-      if (in_output)
-        flags->push_back(line.str());
+      if (in_output) flags->push_back(line.str());
     }
   }
 
@@ -129,8 +125,7 @@ void parseTestExpectation(
 
     bool in_output = false;
     for (StringRef line_with_ending : lines_with_endings) {
-      if (line_with_ending.startswith("*/"))
-        break;
+      if (line_with_ending.startswith("*/")) break;
 
       if (line_with_ending.startswith("OUTPUT:")) {
         // Terminate the previous output section if we found a new one.
@@ -205,8 +200,7 @@ void diffDocuments(std::string path, std::string path_section,
     unlink(expected_file);
     unlink(actual_file);
     // 'diff' returns 0 or 1 if exitted normaly.
-    if (WEXITSTATUS(status) <= 1)
-      return;
+    if (WEXITSTATUS(status) <= 1) return;
   }
 #endif
   std::vector<std::string> actual_output =
@@ -237,8 +231,7 @@ std::string findExpectedOutputForFilename(
     std::string filename,
     const std::unordered_map<std::string, std::string> &expected) {
   for (const auto &entry : expected) {
-    if (StringRef(entry.first).endswith(filename))
-      return entry.second;
+    if (StringRef(entry.first).endswith(filename)) return entry.second;
   }
 
   fprintf(stderr, "Couldn't find expected output for %s\n", filename.c_str());
@@ -247,12 +240,11 @@ std::string findExpectedOutputForFilename(
   return "{}";
 }
 
-IndexFile *
-findDbForPathEnding(const std::string &path,
-                    const std::vector<std::unique_ptr<IndexFile>> &dbs) {
+IndexFile *findDbForPathEnding(
+    const std::string &path,
+    const std::vector<std::unique_ptr<IndexFile>> &dbs) {
   for (auto &db : dbs) {
-    if (StringRef(db->path).endswith(path))
-      return db.get();
+    if (StringRef(db->path).endswith(path)) return db.get();
   }
   return nullptr;
 }
@@ -284,11 +276,9 @@ bool runIndexTests(const std::string &filter_path, bool enable_update) {
       [&](const std::string &path) {
         bool is_fail_allowed = false;
 
-        if (path.find(filter_path) == std::string::npos)
-          return;
+        if (path.find(filter_path) == std::string::npos) return;
 
-        if (!filter_path.empty())
-          printf("Running %s\n", path.c_str());
+        if (!filter_path.empty()) printf("Running %s\n", path.c_str());
 
         // Parse expected output from the test, parse it into JSON document.
         std::vector<std::string> lines_with_endings;
@@ -312,8 +302,7 @@ bool runIndexTests(const std::string &filter_path, bool enable_update) {
         VFS vfs;
         WorkingFiles wfiles;
         std::vector<const char *> cargs;
-        for (auto &arg : flags)
-          cargs.push_back(arg.c_str());
+        for (auto &arg : flags) cargs.push_back(arg.c_str());
         bool ok;
         auto result = ccls::idx::index(&completion, &wfiles, &vfs, "", path,
                                        cargs, {}, true, ok);
@@ -341,21 +330,20 @@ bool runIndexTests(const std::string &filter_path, bool enable_update) {
           if (actual == expected) {
             // std::cout << "[PASSED] " << path << std::endl;
           } else {
-            if (!is_fail_allowed)
-              success = false;
+            if (!is_fail_allowed) success = false;
             diffDocuments(path, expected_path, expected, actual);
             puts("\n");
             if (enable_update) {
-              printf("[Enter to continue - type u to update test, a to update "
-                     "all]");
+              printf(
+                  "[Enter to continue - type u to update test, a to update "
+                  "all]");
               char c = 'u';
               if (!update_all) {
                 c = getchar();
                 getchar();
               }
 
-              if (c == 'a')
-                update_all = true;
+              if (c == 'a') update_all = true;
 
               if (update_all || c == 'u') {
                 // Note: we use |entry.second| instead of |expected_output|
@@ -371,4 +359,4 @@ bool runIndexTests(const std::string &filter_path, bool enable_update) {
 
   return success;
 }
-} // namespace ccls
+}  // namespace ccls

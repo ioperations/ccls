@@ -27,7 +27,7 @@ REFLECT_STRUCT(Out_cclsInfo::DB, files, funcs, types, vars);
 REFLECT_STRUCT(Out_cclsInfo::Pipeline, lastIdle, completed, enqueued);
 REFLECT_STRUCT(Out_cclsInfo::Project, entries);
 REFLECT_STRUCT(Out_cclsInfo, db, pipeline, project);
-} // namespace
+}  // namespace
 
 void MessageHandler::ccls_info(EmptyParam &, ReplyOnce &reply) {
   Out_cclsInfo result;
@@ -56,20 +56,16 @@ void MessageHandler::ccls_fileInfo(JsonReader &reader, ReplyOnce &reply) {
   FileInfoParam param;
   reflect(reader, param);
   QueryFile *file = findFile(param.textDocument.uri.getPath());
-  if (!file)
-    return;
+  if (!file) return;
 
   QueryFile::Def result;
   // Expose some fields of |QueryFile::Def|.
   result.path = file->def->path;
   result.args = file->def->args;
   result.language = file->def->language;
-  if (param.dependencies)
-    result.dependencies = file->def->dependencies;
-  if (param.includes)
-    result.includes = file->def->includes;
-  if (param.skipped_ranges)
-    result.skipped_ranges = file->def->skipped_ranges;
+  if (param.dependencies) result.dependencies = file->def->dependencies;
+  if (param.includes) result.includes = file->def->includes;
+  if (param.skipped_ranges) result.skipped_ranges = file->def->skipped_ranges;
   reply(result);
 }
-} // namespace ccls
+}  // namespace ccls

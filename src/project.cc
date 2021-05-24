@@ -3,14 +3,6 @@
 
 #include "project.hh"
 
-#include "clang_tu.hh" // llvm::vfs
-#include "filesystem.hh"
-#include "log.hh"
-#include "pipeline.hh"
-#include "platform.hh"
-#include "utils.hh"
-#include "working_files.hh"
-
 #include <clang/Driver/Compilation.h>
 #include <clang/Driver/Driver.h>
 #include <clang/Driver/Types.h>
@@ -21,8 +13,15 @@
 #include <llvm/Support/GlobPattern.h>
 #include <llvm/Support/LineIterator.h>
 #include <llvm/Support/Program.h>
-
 #include <rapidjson/writer.h>
+
+#include "clang_tu.hh"  // llvm::vfs
+#include "filesystem.hh"
+#include "log.hh"
+#include "pipeline.hh"
+#include "platform.hh"
+#include "utils.hh"
+#include "working_files.hh"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -30,8 +29,9 @@
 #include <unistd.h>
 #endif
 
-#include <array>
 #include <limits.h>
+
+#include <array>
 #include <unordered_set>
 #include <vector>
 
@@ -49,7 +49,8 @@ std::pair<LanguageId, bool> lookupExtension(std::string_view filename) {
   LanguageId ret;
   if (types::isCXX(i))
     ret = types::isCuda(i) ? LanguageId::Cuda
-                           : objc ? LanguageId::ObjCpp : LanguageId::Cpp;
+          : objc           ? LanguageId::ObjCpp
+                           : LanguageId::Cpp;
   else if (objc)
     ret = LanguageId::ObjC;
   else if (i == types::TY_C || i == types::TY_CHeader)
@@ -86,8 +87,7 @@ struct ProjectProcessor {
 
   bool excludesArg(StringRef arg, int &i) {
     if (arg.startswith("-M")) {
-      if (arg == "-MF" || arg == "-MT" || arg == "-MQ")
-        i++;
+      if (arg == "-MF" || arg == "-MT" || arg == "-MQ") i++;
       return true;
     }
     if (arg == "-Xclang") {
@@ -127,8 +127,7 @@ struct ProjectProcessor {
           else
             break;
         }
-        if (ok)
-          args.push_back(a.data());
+        if (ok) args.push_back(a.data());
       } else if (!excludesArg(a, i)) {
         args.push_back(arg);
       }
@@ -147,8 +146,7 @@ struct ProjectProcessor {
       OPT_o = false;
       if (arg[0] == '-') {
         OPT_o = arg[1] == 'o' && arg[2] == '\0';
-        if (OPT_o || arg[1] == 'D' || arg[1] == 'W')
-          continue;
+        if (OPT_o || arg[1] == 'D' || arg[1] == 'W') continue;
       } else if (last_o) {
         continue;
       } else if (sys::path::filename(arg) == base_name) {
@@ -160,8 +158,7 @@ struct ProjectProcessor {
       }
       hash_combine(hash, std::hash<std::string_view>{}(arg));
     }
-    if (!command_set.insert(hash).second)
-      return;
+    if (!command_set.insert(hash).second) return;
     auto args = entry.args;
     args.push_back("-fsyntax-only");
     for (const std::string &arg : g_config->clang.extraArgs)
@@ -188,8 +185,7 @@ struct ProjectProcessor {
 
     std::unique_ptr<driver::Compilation> C(Driver.BuildCompilation(args));
     const driver::JobList &Jobs = C->getJobs();
-    if (Jobs.size() != 1)
-      return;
+    if (Jobs.size() != 1) return;
     const auto &CCArgs = Jobs.begin()->getArguments();
 
     auto CI = std::make_unique<CompilerInvocation>();
@@ -204,26 +200,25 @@ struct ProjectProcessor {
           normalizePath(resolveIfRelative(entry.directory, E.Path));
       ensureEndsInSlash(path);
       switch (E.Group) {
-      default:
-        folder.search_dir2kind[path] |= 2;
-        break;
-      case frontend::Quoted:
-        folder.search_dir2kind[path] |= 1;
-        break;
-      case frontend::Angled:
-        folder.search_dir2kind[path] |= 3;
-        break;
+        default:
+          folder.search_dir2kind[path] |= 2;
+          break;
+        case frontend::Quoted:
+          folder.search_dir2kind[path] |= 1;
+          break;
+        case frontend::Angled:
+          folder.search_dir2kind[path] |= 3;
+          break;
       }
     }
 #endif
   }
 };
 
-std::vector<const char *>
-readCompilerArgumentsFromFile(const std::string &path) {
+std::vector<const char *> readCompilerArgumentsFromFile(
+    const std::string &path) {
   auto mbOrErr = MemoryBuffer::getFile(path);
-  if (!mbOrErr)
-    return {};
+  if (!mbOrErr) return {};
   std::vector<const char *> args;
   for (line_iterator i(*mbOrErr.get(), true, '#'), e; i != e; ++i) {
     std::string line(*i);
@@ -253,8 +248,7 @@ void loadDirectoryListing(ProjectProcessor &proc, const std::string &root,
   auto getDotCcls = [&root, &folder](std::string cur) {
     while (!(cur = sys::path::parent_path(cur)).empty()) {
       auto it = folder.dot_ccls.find(cur + '/');
-      if (it != folder.dot_ccls.end())
-        return it->second;
+      if (it != folder.dot_ccls.end()) return it->second;
       std::string normalized = normalizePath(cur);
       // Break if outside of the project root.
       if (normalized.size() <= root.size() ||
@@ -268,8 +262,7 @@ void loadDirectoryListing(ProjectProcessor &proc, const std::string &root,
                    [&folder, &files, &seen](const std::string &path) {
                      std::pair<LanguageId, bool> lang = lookupExtension(path);
                      if (lang.first != LanguageId::Unknown && !lang.second) {
-                       if (!seen.count(path))
-                         files.push_back(path);
+                       if (!seen.count(path)) files.push_back(path);
                      } else if (sys::path::filename(path) == ".ccls") {
                        std::vector<const char *> args =
                            readCompilerArgumentsFromFile(path);
@@ -277,8 +270,7 @@ void loadDirectoryListing(ProjectProcessor &proc, const std::string &root,
                            sys::path::parent_path(path).str() + '/', args);
                        std::string l;
                        for (size_t i = 0; i < args.size(); i++) {
-                         if (i)
-                           l += ' ';
+                         if (i) l += ' ';
                          l += args[i];
                        }
                        LOG_S(INFO) << "use " << path << ": " << l;
@@ -318,8 +310,7 @@ int computeGuessScore(std::string_view a, std::string_view b) {
   for (uint8_t c : a)
     if (c == '/') {
       score -= 9;
-      if (h)
-        m[h]++;
+      if (h) m[h]++;
       h = 0;
     } else {
       h = h * 33 + c;
@@ -341,15 +332,13 @@ int computeGuessScore(std::string_view a, std::string_view b) {
   uint8_t c;
   int d[127] = {};
   for (int i = a.size(); i-- && (c = a[i]) != '/';)
-    if (c < 127)
-      d[c]++;
+    if (c < 127) d[c]++;
   for (int i = b.size(); i-- && (c = b[i]) != '/';)
-    if (c < 127 && d[c])
-      d[c]--, score++;
+    if (c < 127 && d[c]) d[c]--, score++;
   return score;
 }
 
-} // namespace
+}  // namespace
 
 void Project::loadDirectory(const std::string &root, Project::Folder &folder) {
   SmallString<256> cdbDir, path, stdinPath;
@@ -371,12 +360,10 @@ void Project::loadDirectory(const std::string &root, Project::Folder &folder) {
     char tmpdir[L_tmpnam];
     tmpnam_s(tmpdir, L_tmpnam);
     cdbDir = tmpdir;
-    if (sys::fs::create_directory(tmpdir, false))
-      return;
+    if (sys::fs::create_directory(tmpdir, false)) return;
 #else
     char tmpdir[] = "/tmp/ccls-compdb-XXXXXX";
-    if (!mkdtemp(tmpdir))
-      return;
+    if (!mkdtemp(tmpdir)) return;
     cdbDir = tmpdir;
 #endif
     sys::path::append(path, cdbDir, "compile_commands.json");
@@ -450,8 +437,7 @@ void Project::loadDirectory(const std::string &root, Project::Folder &folder) {
       }
       entry.compdb_size = entry.args.size();
       proc.getSearchDirs(entry);
-      if (seen.insert(entry.filename).second)
-        folder.entries.push_back(entry);
+      if (seen.insert(entry.filename).second) folder.entries.push_back(entry);
     }
   }
 
@@ -459,8 +445,7 @@ void Project::loadDirectory(const std::string &root, Project::Folder &folder) {
   // exist.
   path.clear();
   sys::path::append(path, root, ".ccls");
-  if (sys::fs::exists(path))
-    loadDirectoryListing(proc, root, seen);
+  if (sys::fs::exists(path)) loadDirectoryListing(proc, root, seen);
 }
 
 void Project::load(const std::string &root) {
@@ -537,8 +522,7 @@ Project::Entry Project::findEntry(const std::string &path, bool can_redirect,
   } else {
     // If the first line is %compile_commands.json, find the matching compdb
     // entry and append .ccls args.
-    if (must_exist && !match && !(best_dot_ccls_args && !append))
-      return ret;
+    if (must_exist && !match && !(best_dot_ccls_args && !append)) return ret;
     if (!best) {
       // Infer args from a similar path.
       int best_score = INT_MIN;
@@ -570,7 +554,7 @@ Project::Entry Project::findEntry(const std::string &path, bool can_redirect,
       ret.root = best->root;
       ret.directory = best->directory;
       ret.args = best->args;
-      if (best->compdb_size) // delete trailing .ccls options if exist
+      if (best->compdb_size)  // delete trailing .ccls options if exist
         ret.args.resize(best->compdb_size);
       else
         best_dot_ccls_args = nullptr;
@@ -610,10 +594,10 @@ void Project::index(WorkingFiles *wfiles, const RequestId &id) {
           args = entry.args;
           args.insert(args.end(), extra_args.begin(), extra_args.end());
           args.push_back(intern("-working-directory=" + entry.directory));
-          pipeline::index(entry.filename, args,
-                          interactive ? IndexMode::Normal
-                                      : IndexMode::Background,
-                          false, id);
+          pipeline::index(
+              entry.filename, args,
+              interactive ? IndexMode::Normal : IndexMode::Background, false,
+              id);
         } else {
           LOG_V(1) << "[" << i << "/" << folder.entries.size()
                    << "]: " << reason << "; skip " << entry.filename;
@@ -651,4 +635,4 @@ void Project::indexRelated(const std::string &path) {
       break;
     }
 }
-} // namespace ccls
+}  // namespace ccls

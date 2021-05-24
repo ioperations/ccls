@@ -1,8 +1,6 @@
 #include "header.h"
 
-void Impl() {
-  Foo1<int>();
-}
+void Impl() { Foo1<int>(); }
 
 /*
 OUTPUT: header.h

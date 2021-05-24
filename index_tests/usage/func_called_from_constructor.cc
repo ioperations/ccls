@@ -4,9 +4,7 @@ struct Foo {
   Foo();
 };
 
-Foo::Foo() {
-  called();
-}
+Foo::Foo() { called(); }
 
 /*
 OUTPUT:

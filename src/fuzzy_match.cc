@@ -3,9 +3,10 @@
 
 #include "fuzzy_match.hh"
 
-#include <algorithm>
 #include <ctype.h>
 #include <stdio.h>
+
+#include <algorithm>
 #include <vector>
 
 namespace ccls {
@@ -14,10 +15,8 @@ enum CharClass { Other, Lower, Upper };
 enum CharRole { None, Tail, Head };
 
 CharClass getCharClass(int c) {
-  if (islower(c))
-    return Lower;
-  if (isupper(c))
-    return Upper;
+  if (islower(c)) return Lower;
+  if (isupper(c)) return Upper;
   return Other;
 }
 
@@ -29,8 +28,7 @@ void calculateRoles(std::string_view s, int roles[], int *class_set) {
   CharClass pre = Other, cur = getCharClass(s[0]), suc;
   *class_set = 1 << cur;
   auto fn = [&]() {
-    if (cur == Other)
-      return None;
+    if (cur == Other) return None;
     // U(U)L is Head while U(U)U is Tail
     return pre == Other || (cur == Upper && (pre == Lower || suc == Lower))
                ? Head
@@ -45,14 +43,12 @@ void calculateRoles(std::string_view s, int roles[], int *class_set) {
   }
   roles[s.size() - 1] = fn();
 }
-} // namespace
+}  // namespace
 
 int FuzzyMatcher::missScore(int j, bool last) {
   int s = -3;
-  if (last)
-    s -= 10;
-  if (text_role[j] == Head)
-    s -= 10;
+  if (last) s -= 10;
+  if (text_role[j] == Head) s -= 10;
   return s;
 }
 
@@ -62,8 +58,7 @@ int FuzzyMatcher::matchScore(int i, int j, bool last) {
   if (pat[i] == text[j]) {
     s++;
     // pat contains uppercase letters or prefix matching.
-    if ((pat_set & 1 << Upper) || i == j)
-      s++;
+    if ((pat_set & 1 << Upper) || i == j) s++;
   }
   if (pat_role[i] == Head) {
     if (text_role[j] == Head)
@@ -72,18 +67,15 @@ int FuzzyMatcher::matchScore(int i, int j, bool last) {
       s -= 10;
   }
   // Matching a tail while previous char wasn't matched.
-  if (text_role[j] == Tail && i && !last)
-    s -= 30;
+  if (text_role[j] == Tail && i && !last) s -= 30;
   // First char of pat matches a tail.
-  if (i == 0 && text_role[j] == Tail)
-    s -= 40;
+  if (i == 0 && text_role[j] == Tail) s -= 40;
   return s;
 }
 
 FuzzyMatcher::FuzzyMatcher(std::string_view pattern, int sensitivity) {
   calculateRoles(pattern, pat_role, &pat_set);
-  if (sensitivity == 1)
-    sensitivity = pat_set & 1 << Upper ? 2 : 0;
+  if (sensitivity == 1) sensitivity = pat_set & 1 << Upper ? 2 : 0;
   case_sensitivity = sensitivity;
   size_t n = 0;
   for (size_t i = 0; i < pattern.size(); i++)
@@ -96,17 +88,13 @@ FuzzyMatcher::FuzzyMatcher(std::string_view pattern, int sensitivity) {
 }
 
 int FuzzyMatcher::match(std::string_view text, bool strict) {
-  if (pat.empty() != text.empty())
-    return kMinScore;
+  if (pat.empty() != text.empty()) return kMinScore;
   int n = int(text.size());
-  if (n > kMaxText)
-    return kMinScore + 1;
+  if (n > kMaxText) return kMinScore + 1;
   this->text = text;
-  for (int i = 0; i < n; i++)
-    low_text[i] = (char)::tolower(text[i]);
+  for (int i = 0; i < n; i++) low_text[i] = (char)::tolower(text[i]);
   calculateRoles(text, text_role, &text_set);
-  if (strict && n && !!pat_role[0] != !!text_role[0])
-    return kMinScore;
+  if (strict && n && !!pat_role[0] != !!text_role[0]) return kMinScore;
   dp[0][0][0] = dp[0][0][1] = 0;
   for (int j = 0; j < n; j++) {
     dp[0][j + 1][0] = dp[0][j][0] + missScore(j, false);
@@ -138,7 +126,7 @@ int FuzzyMatcher::match(std::string_view text, bool strict) {
     ret = std::max(ret, dp[pat.size() & 1][j][1] - 2 * (n - j));
   return ret;
 }
-} // namespace ccls
+}  // namespace ccls
 
 #if 0
 TEST_SUITE("fuzzy_match") {

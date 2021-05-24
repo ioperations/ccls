@@ -1,6 +1,6 @@
 namespace hello {
 void foo() {}
-}
+}  // namespace hello
 
 /*
 OUTPUT:

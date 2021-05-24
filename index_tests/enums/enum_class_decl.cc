@@ -1,8 +1,5 @@
 typedef unsigned char uint8_t;
-enum class Foo : uint8_t {
-  A,
-  B = 20
-};
+enum class Foo : uint8_t { A, B = 20 };
 
 /*
 OUTPUT:

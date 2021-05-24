@@ -1,10 +1,10 @@
 namespace ns {
-  template<typename T>
-  class Foo {};
+template <typename T>
+class Foo {};
 
-  Foo<int> a;
-  Foo<bool> b;
-}
+Foo<int> a;
+Foo<bool> b;
+}  // namespace ns
 
 /*
 OUTPUT:

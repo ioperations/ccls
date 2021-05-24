@@ -1,8 +1,6 @@
-template<typename T>
+template <typename T>
 struct Foo {
-  static int foo() {
-    return 3;
-  }
+  static int foo() { return 3; }
 };
 
 int a = Foo<int>::foo();

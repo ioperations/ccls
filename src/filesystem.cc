@@ -4,17 +4,16 @@
 #include "filesystem.hh"
 using namespace llvm;
 
-#include "utils.hh"
-
 #include <set>
 #include <vector>
+
+#include "utils.hh"
 
 void getFilesInFolder(std::string folder, bool recursive, bool dir_prefix,
                       const std::function<void(const std::string &)> &handler) {
   ccls::ensureEndsInSlash(folder);
   sys::fs::file_status status;
-  if (sys::fs::status(folder, status, true))
-    return;
+  if (sys::fs::status(folder, status, true)) return;
   sys::fs::UniqueID id;
   std::vector<std::string> curr{folder};
   std::vector<std::pair<std::string, sys::fs::file_status>> succ;
@@ -37,17 +36,14 @@ void getFilesInFolder(std::string folder, bool recursive, bool dir_prefix,
             sys::fs::status(path, status, false))
           continue;
         if (sys::fs::is_symlink_file(status)) {
-          if (sys::fs::status(path, status, true))
-            continue;
+          if (sys::fs::status(path, status, true)) continue;
           if (sys::fs::is_directory(status)) {
-            if (recursive)
-              succ.emplace_back(path, status);
+            if (recursive) succ.emplace_back(path, status);
             continue;
           }
         }
         if (sys::fs::is_regular_file(status)) {
-          if (!dir_prefix)
-            path = path.substr(folder.size());
+          if (!dir_prefix) path = path.substr(folder.size());
           handler(sys::path::convert_to_slash(path));
         } else if (recursive && sys::fs::is_directory(status) &&
                    !seen.count(id = status.getUniqueID())) {

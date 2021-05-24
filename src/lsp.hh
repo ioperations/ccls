@@ -3,15 +3,15 @@
 
 #pragma once
 
-#include "config.hh"
-#include "serializer.hh"
-#include "utils.hh"
-
 #include <rapidjson/fwd.h>
 
 #include <chrono>
 #include <iosfwd>
 #include <string>
+
+#include "config.hh"
+#include "serializer.hh"
+#include "utils.hh"
 
 namespace ccls {
 struct RequestId {
@@ -270,4 +270,4 @@ enum class LanguageId {
   Cuda = 4,
 };
 
-} // namespace ccls
+}  // namespace ccls

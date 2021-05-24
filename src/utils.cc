@@ -3,25 +3,24 @@
 
 #include "utils.hh"
 
+#include <assert.h>
+#include <ctype.h>
+#include <errno.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/Path.h>
+#include <siphash.h>
+#include <string.h>
+
+#include <algorithm>
+#include <functional>
+#include <regex>
+#include <unordered_map>
+
 #include "log.hh"
 #include "message_handler.hh"
 #include "pipeline.hh"
 #include "platform.hh"
-
-#include <siphash.h>
-
-#include <llvm/ADT/StringRef.h>
-#include <llvm/Support/FileSystem.h>
-#include <llvm/Support/Path.h>
-
-#include <algorithm>
-#include <assert.h>
-#include <ctype.h>
-#include <errno.h>
-#include <functional>
-#include <regex>
-#include <string.h>
-#include <unordered_map>
 
 using namespace llvm;
 
@@ -71,12 +70,10 @@ GroupMatch::GroupMatch(const std::vector<std::string> &whitelist,
 bool GroupMatch::matches(const std::string &text,
                          std::string *blacklist_pattern) const {
   for (const Matcher &m : whitelist)
-    if (m.matches(text))
-      return true;
+    if (m.matches(text)) return true;
   for (const Matcher &m : blacklist)
     if (m.matches(text)) {
-      if (blacklist_pattern)
-        *blacklist_pattern = m.pattern;
+      if (blacklist_pattern) *blacklist_pattern = m.pattern;
       return false;
     }
   return true;
@@ -98,8 +95,7 @@ uint64_t hashUsr(llvm::StringRef s) {
 std::string lowerPathIfInsensitive(const std::string &path) {
 #if defined(_WIN32)
   std::string ret = path;
-  for (char &c : ret)
-    c = tolower(c);
+  for (char &c : ret) c = tolower(c);
   return ret;
 #else
   return path;
@@ -107,8 +103,7 @@ std::string lowerPathIfInsensitive(const std::string &path) {
 }
 
 void ensureEndsInSlash(std::string &path) {
-  if (path.empty() || path[path.size() - 1] != '/')
-    path += '/';
+  if (path.empty() || path[path.size() - 1] != '/') path += '/';
 }
 
 std::string escapeFileName(std::string path) {
@@ -117,15 +112,13 @@ std::string escapeFileName(std::string path) {
   std::replace(path.begin(), path.end(), ':', '@');
 #endif
   std::replace(path.begin(), path.end(), '/', '@');
-  if (slash)
-    path += '/';
+  if (slash) path += '/';
   return path;
 }
 
 std::string resolveIfRelative(const std::string &directory,
                               const std::string &path) {
-  if (sys::path::is_absolute(path))
-    return path;
+  if (sys::path::is_absolute(path)) return path;
   SmallString<256> ret;
   sys::path::append(ret, directory, path);
   return normalizePath(ret.str());
@@ -140,8 +133,7 @@ std::string realPath(const std::string &path) {
 bool normalizeFolder(std::string &path) {
   for (auto &[root, real] : g_config->workspaceFolders) {
     StringRef p(path);
-    if (p.startswith(root))
-      return true;
+    if (p.startswith(root)) return true;
     if (p.startswith(real)) {
       path = root + path.substr(real.size());
       return true;
@@ -152,8 +144,7 @@ bool normalizeFolder(std::string &path) {
 
 std::optional<int64_t> lastWriteTime(const std::string &path) {
   sys::fs::file_status status;
-  if (sys::fs::status(path, status))
-    return {};
+  if (sys::fs::status(path, status)) return {};
   return sys::toTimeT(status.getLastModificationTime());
 }
 
@@ -161,11 +152,9 @@ std::optional<std::string> readContent(const std::string &filename) {
   char buf[4096];
   std::string ret;
   FILE *f = fopen(filename.c_str(), "rb");
-  if (!f)
-    return {};
+  if (!f) return {};
   size_t n;
-  while ((n = fread(buf, 1, sizeof buf, f)) > 0)
-    ret.append(buf, n);
+  while ((n = fread(buf, 1, sizeof buf, f)) > 0) ret.append(buf, n);
   fclose(f);
   return ret;
 }
@@ -187,8 +176,7 @@ int reverseSubseqMatch(std::string_view pat, std::string_view text,
   if (case_sensitivity == 1)
     case_sensitivity = std::any_of(pat.begin(), pat.end(), isupper) ? 2 : 0;
   int j = pat.size();
-  if (!j)
-    return text.size();
+  if (!j) return text.size();
   for (int i = text.size(); i--;)
     if ((case_sensitivity ? text[i] == pat[j - 1]
                           : tolower(text[i]) == tolower(pat[j - 1])) &&
@@ -198,4 +186,4 @@ int reverseSubseqMatch(std::string_view pat, std::string_view text,
 }
 
 std::string getDefaultResourceDirectory() { return CLANG_RESOURCE_DIRECTORY; }
-} // namespace ccls
+}  // namespace ccls

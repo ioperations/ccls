@@ -1,14 +1,8 @@
-enum Foo : int {
-  A,
-  B = 20
-};
+enum Foo : int { A, B = 20 };
 
 typedef int int32_t;
 
-enum class E : int32_t {
-  E0,
-  E20 = 20
-};
+enum class E : int32_t { E0, E20 = 20 };
 
 /*
 OUTPUT:

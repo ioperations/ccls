@@ -5,9 +5,7 @@ void caller() {
   called();
 }
 
-void foo() {
-  caller<int>();
-}
+void foo() { caller<int>(); }
 
 /*
 // NOTE: without caller<int>() instantation caller() is never visited so

@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "message_handler.hh"
-
 #include <atomic>
 #include <mutex>
+
+#include "message_handler.hh"
 
 namespace ccls {
 struct GroupMatch;
@@ -22,8 +22,8 @@ struct IncludeComplete {
   // Ensures the one-off file is inside |completion_items|.
   void addFile(const std::string &absolute_path);
 
-  std::optional<ccls::CompletionItem>
-  findCompletionItemForAbsolutePath(const std::string &absolute_path);
+  std::optional<ccls::CompletionItem> findCompletionItemForAbsolutePath(
+      const std::string &absolute_path);
 
   // Insert item to |completion_items|.
   // Update |absolute_path_to_completion_item| and |inserted_paths|.
@@ -46,4 +46,4 @@ struct IncludeComplete {
   Project *project_;
   std::unique_ptr<GroupMatch> match_;
 };
-} // namespace ccls
+}  // namespace ccls

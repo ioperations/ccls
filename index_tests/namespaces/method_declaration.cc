@@ -2,7 +2,7 @@ namespace hello {
 class Foo {
   void foo();
 };
-}
+}  // namespace hello
 
 /*
 OUTPUT:

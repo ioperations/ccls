@@ -5,9 +5,7 @@ union Foo {
 
 Foo f;
 
-void act(Foo*) {
-  f.a = 3;
-}
+void act(Foo*) { f.a = 3; }
 
 /*
 // TODO: instantiations on Foo should include parameter?

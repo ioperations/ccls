@@ -1,6 +1,4 @@
-void foo(int a) {
-  a += 10;
-}
+void foo(int a) { a += 10; }
 /*
 OUTPUT:
 {

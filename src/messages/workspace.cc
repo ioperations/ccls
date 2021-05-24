@@ -1,6 +1,15 @@
 // Copyright 2017-2018 ccls Authors
 // SPDX-License-Identifier: Apache-2.0
 
+#include <ctype.h>
+#include <limits.h>
+#include <llvm/ADT/STLExtras.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/Support/Path.h>
+
+#include <algorithm>
+#include <functional>
+
 #include "fuzzy_match.hh"
 #include "log.hh"
 #include "message_handler.hh"
@@ -8,23 +17,13 @@
 #include "project.hh"
 #include "query.hh"
 #include "sema_manager.hh"
-
-#include <llvm/ADT/STLExtras.h>
-#include <llvm/ADT/StringRef.h>
-#include <llvm/Support/Path.h>
-
-#include <algorithm>
-#include <ctype.h>
-#include <functional>
-#include <limits.h>
 using namespace llvm;
 
 namespace ccls {
 REFLECT_STRUCT(SymbolInformation, name, kind, location, containerName);
 
 void MessageHandler::workspace_didChangeConfiguration(EmptyParam &) {
-  for (auto &[folder, _] : g_config->workspaceFolders)
-    project->load(folder);
+  for (auto &[folder, _] : g_config->workspaceFolders) project->load(folder);
   project->index(wfiles, RequestId());
 
   manager->clear();
@@ -39,27 +38,26 @@ void MessageHandler::workspace_didChangeWatchedFiles(
         lookupExtension(path).first == LanguageId::Unknown)
       return;
     for (std::string cur = path; cur.size(); cur = sys::path::parent_path(cur))
-      if (cur[0] == '.')
-        return;
+      if (cur[0] == '.') return;
 
     switch (event.type) {
-    case FileChangeType::Created:
-    case FileChangeType::Changed: {
-      IndexMode mode =
-          wfiles->getFile(path) ? IndexMode::Normal : IndexMode::Background;
-      pipeline::index(path, {}, mode, true);
-      if (event.type == FileChangeType::Changed) {
-        if (mode == IndexMode::Normal)
-          manager->onSave(path);
-        else
-          manager->onClose(path);
+      case FileChangeType::Created:
+      case FileChangeType::Changed: {
+        IndexMode mode =
+            wfiles->getFile(path) ? IndexMode::Normal : IndexMode::Background;
+        pipeline::index(path, {}, mode, true);
+        if (event.type == FileChangeType::Changed) {
+          if (mode == IndexMode::Normal)
+            manager->onSave(path);
+          else
+            manager->onClose(path);
+        }
+        break;
       }
-      break;
-    }
-    case FileChangeType::Deleted:
-      pipeline::index(path, {}, IndexMode::Delete, false);
-      manager->onClose(path);
-      break;
+      case FileChangeType::Deleted:
+        pipeline::index(path, {}, IndexMode::Delete, false);
+        manager->onClose(path);
+        break;
     }
   }
 }
@@ -86,8 +84,7 @@ void MessageHandler::workspace_didChangeWorkspaceFolders(
     std::string folder = wf.uri.getPath();
     ensureEndsInSlash(folder);
     std::string real = realPath(folder) + '/';
-    if (folder == real)
-      real.clear();
+    if (folder == real) real.clear();
     LOG_S(INFO) << "add workspace folder " << wf.name << ": "
                 << (real.empty() ? folder : (folder + " -> ").append(real));
     workspaceFolders.emplace_back();
@@ -110,8 +107,7 @@ bool addSymbol(
     SymbolIdx sym, bool use_detailed,
     std::vector<std::tuple<SymbolInformation, int, SymbolIdx>> *result) {
   std::optional<SymbolInformation> info = getSymbolInfo(db, sym, true);
-  if (!info)
-    return false;
+  if (!info) return false;
 
   Maybe<DeclRef> dr;
   bool in_folder = false;
@@ -119,36 +115,31 @@ bool addSymbol(
     for (auto &def : entity.def)
       if (def.spell) {
         dr = def.spell;
-        if (!in_folder && (in_folder = file_set[def.spell->file_id]))
-          break;
+        if (!in_folder && (in_folder = file_set[def.spell->file_id])) break;
       }
   });
   if (!dr) {
     auto &decls = getNonDefDeclarations(db, sym);
     for (auto &dr1 : decls) {
       dr = dr1;
-      if (!in_folder && (in_folder = file_set[dr1.file_id]))
-        break;
+      if (!in_folder && (in_folder = file_set[dr1.file_id])) break;
     }
   }
-  if (!in_folder)
-    return false;
+  if (!in_folder) return false;
 
   std::optional<Location> ls_location = getLsLocation(db, wfiles, *dr);
-  if (!ls_location)
-    return false;
+  if (!ls_location) return false;
   info->location = *ls_location;
   result->emplace_back(*info, int(use_detailed), sym);
   return true;
 }
-} // namespace
+}  // namespace
 
 void MessageHandler::workspace_symbol(WorkspaceSymbolParam &param,
                                       ReplyOnce &reply) {
   std::vector<SymbolInformation> result;
   const std::string &query = param.query;
-  for (auto &folder : param.folders)
-    ensureEndsInSlash(folder);
+  for (auto &folder : param.folders) ensureEndsInSlash(folder);
   std::vector<uint8_t> file_set = db->getFileSet(param.folders);
 
   // {symbol info, matching detailed_name or short_name, index}
@@ -159,8 +150,7 @@ void MessageHandler::workspace_symbol(WorkspaceSymbolParam &param,
   std::string query_without_space;
   query_without_space.reserve(query.size());
   for (char c : query)
-    if (!isspace(c))
-      query_without_space += c;
+    if (!isspace(c)) query_without_space += c;
 
   auto add = [&](SymbolIdx sym) {
     std::string_view detailed_name = db->getSymbolName(sym, true);
@@ -172,11 +162,9 @@ void MessageHandler::workspace_symbol(WorkspaceSymbolParam &param,
            cands.size() >= g_config->workspaceSymbol.maxNum;
   };
   for (auto &func : db->funcs)
-    if (add({func.usr, Kind::Func}))
-      goto done_add;
+    if (add({func.usr, Kind::Func})) goto done_add;
   for (auto &type : db->types)
-    if (add({type.usr, Kind::Type}))
-      goto done_add;
+    if (add({type.usr, Kind::Type})) goto done_add;
   for (auto &var : db->vars)
     if (var.def.size() && !var.def[0].is_local() && add({var.usr, Kind::Var}))
       goto done_add;
@@ -198,16 +186,14 @@ done_add:
     result.reserve(cands.size());
     for (auto &cand : cands) {
       // Discard awful candidates.
-      if (std::get<1>(cand) <= FuzzyMatcher::kMinScore)
-        break;
+      if (std::get<1>(cand) <= FuzzyMatcher::kMinScore) break;
       result.push_back(std::get<0>(cand));
     }
   } else {
     result.reserve(cands.size());
-    for (auto &cand : cands)
-      result.push_back(std::get<0>(cand));
+    for (auto &cand : cands) result.push_back(std::get<0>(cand));
   }
 
   reply(result);
 }
-} // namespace ccls
+}  // namespace ccls

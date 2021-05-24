@@ -46,8 +46,7 @@ void MessageHandler::textDocument_didOpen(DidOpenTextDocumentParam &param) {
   if ((lang != LanguageId::Unknown && !header) ||
       pipeline::stats.completed == pipeline::stats.enqueued)
     pipeline::index(path, {}, IndexMode::Normal, false);
-  if (header)
-    project->indexRelated(path);
+  if (header) project->indexRelated(path);
 
   manager->onView(path);
 }
@@ -57,4 +56,4 @@ void MessageHandler::textDocument_didSave(TextDocumentParam &param) {
   pipeline::index(path, {}, IndexMode::Normal, false);
   manager->onSave(path);
 }
-} // namespace ccls
+}  // namespace ccls

@@ -1,8 +1,6 @@
 extern int a;
 
-void foo() {
-  a = 5;
-}
+void foo() { a = 5; }
 /*
 OUTPUT:
 {
