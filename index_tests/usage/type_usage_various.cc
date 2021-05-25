@@ -1,10 +1,10 @@
 class Foo {
-  Foo* make();
+    Foo* make();
 };
 
 Foo* Foo::make() {
-  Foo f;
-  return nullptr;
+    Foo f;
+    return nullptr;
 }
 
 extern Foo foo;

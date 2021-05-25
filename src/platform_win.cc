@@ -18,19 +18,19 @@
 
 namespace ccls {
 std::string normalizePath(llvm::StringRef path) {
-  TCHAR buffer[MAX_PATH] = TEXT("");
-  TCHAR **lpp_part = {NULL};
+    TCHAR buffer[MAX_PATH] = TEXT("");
+    TCHAR** lpp_part = {NULL};
 
-  std::string result(path);
-  if (GetFullPathName(result.c_str(), MAX_PATH, buffer, lpp_part) != 0)
-    result = buffer;
+    std::string result(path);
+    if (GetFullPathName(result.c_str(), MAX_PATH, buffer, lpp_part) != 0)
+        result = buffer;
 
-  std::replace(result.begin(), result.end(), '\\', '/');
-  // Normalize drive letter.
-  if (result.size() > 1 && result[0] >= 'a' && result[0] <= 'z' &&
-      result[1] == ':')
-    result[0] = toupper(result[0]);
-  return result;
+    std::replace(result.begin(), result.end(), '\\', '/');
+    // Normalize drive letter.
+    if (result.size() > 1 && result[0] >= 'a' && result[0] <= 'z' &&
+        result[1] == ':')
+        result[0] = toupper(result[0]);
+    return result;
 }
 
 void freeUnusedMemory() {}
@@ -38,8 +38,8 @@ void freeUnusedMemory() {}
 // TODO Wait for debugger to attach
 void traceMe() {}
 
-void spawnThread(void *(*fn)(void *), void *arg) {
-  std::thread(fn, arg).detach();
+void spawnThread(void* (*fn)(void*), void* arg) {
+    std::thread(fn, arg).detach();
 }
 }  // namespace ccls
 

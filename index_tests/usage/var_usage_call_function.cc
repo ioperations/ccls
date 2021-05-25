@@ -1,10 +1,10 @@
 void called() {}
 
 void caller() {
-  auto x = &called;
-  x();
+    auto x = &called;
+    x();
 
-  called();
+    called();
 }
 
 /*

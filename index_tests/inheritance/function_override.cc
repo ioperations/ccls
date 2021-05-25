@@ -1,8 +1,8 @@
 class Root {
-  virtual void foo();
+    virtual void foo();
 };
 class Derived : public Root {
-  void foo() override {}
+    void foo() override {}
 };
 
 /*

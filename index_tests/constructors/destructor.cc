@@ -1,7 +1,7 @@
 class Foo {
- public:
-  Foo() {}
-  ~Foo(){};
+   public:
+    Foo() {}
+    ~Foo(){};
 };
 
 void foo() { Foo f; }

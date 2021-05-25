@@ -2,8 +2,8 @@ template <typename T>
 void accept(T);
 
 void foo() {
-  accept(1);
-  accept(true);
+    accept(1);
+    accept(true);
 }
 
 /*

@@ -5,8 +5,8 @@ Type* foo();
 Type* foo() { return nullptr; }
 
 class Foo {
-  Type* Get(int);
-  void Empty();
+    Type* Get(int);
+    void Empty();
 };
 
 Type* Foo::Get(int) { return nullptr; }

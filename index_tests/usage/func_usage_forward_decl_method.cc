@@ -1,10 +1,10 @@
 struct Foo {
-  void foo();
+    void foo();
 };
 
 void usage() {
-  Foo* f = nullptr;
-  f->foo();
+    Foo* f = nullptr;
+    f->foo();
 }
 /*
 OUTPUT:

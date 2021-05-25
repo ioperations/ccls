@@ -3,7 +3,7 @@ enum VarType {};
 
 template <typename _>
 struct Holder {
-  static constexpr VarType static_var = (VarType)0x0;
+    static constexpr VarType static_var = (VarType)0x0;
 };
 
 template <typename _>

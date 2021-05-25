@@ -1,6 +1,6 @@
 union Foo {
-  int a : 5;
-  bool b : 3;
+    int a : 5;
+    bool b : 3;
 };
 
 Foo f;

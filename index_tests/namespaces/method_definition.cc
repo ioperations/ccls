@@ -1,6 +1,6 @@
 namespace hello {
 class Foo {
-  void foo();
+    void foo();
 };
 
 void Foo::foo() {}

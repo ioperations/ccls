@@ -2,8 +2,8 @@ struct ForwardType;
 struct ImplementedType {};
 
 struct Foo {
-  ForwardType* a;
-  ImplementedType b;
+    ForwardType* a;
+    ImplementedType b;
 };
 
 /*

@@ -1,7 +1,7 @@
 class Foo {
-  void declonly();
-  virtual void purevirtual() = 0;
-  void def();
+    void declonly();
+    virtual void purevirtual() = 0;
+    void def();
 };
 
 void Foo::def() {}

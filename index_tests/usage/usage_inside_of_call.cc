@@ -3,15 +3,15 @@ void called(int a);
 int gen();
 
 struct Foo {
-  static int static_var;
-  int field_var;
+    static int static_var;
+    int field_var;
 };
 
 int Foo::static_var = 0;
 
 void foo() {
-  int a = 5;
-  called(a + gen() + Foo().field_var + Foo::static_var);
+    int a = 5;
+    called(a + gen() + Foo().field_var + Foo::static_var);
 }
 
 /*

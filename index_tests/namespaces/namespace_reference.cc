@@ -4,9 +4,9 @@ void Accept(int a) {}
 }  // namespace ns
 
 void Runner() {
-  ns::Accept(ns::Foo);
-  using namespace ns;
-  Accept(Foo);
+    ns::Accept(ns::Foo);
+    using namespace ns;
+    Accept(Foo);
 }
 
 /*

@@ -1,14 +1,14 @@
 void foo() {
-  int x;
+    int x;
 
-  auto dosomething = [&x](int y) {
-    ++x;
-    ++y;
-  };
+    auto dosomething = [&x](int y) {
+        ++x;
+        ++y;
+    };
 
-  dosomething(1);
-  dosomething(1);
-  dosomething(1);
+    dosomething(1);
+    dosomething(1);
+    dosomething(1);
 }
 
 /*

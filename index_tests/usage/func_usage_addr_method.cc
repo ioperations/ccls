@@ -1,5 +1,5 @@
 struct Foo {
-  void Used();
+    void Used();
 };
 
 void user() { auto x = &Foo::Used; }

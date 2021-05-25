@@ -7,8 +7,8 @@ static unique_ptr<bool> f0;
 static unique_ptr<S> f1;
 
 unique_ptr<S>* return_type() {
-  unique_ptr<S>* local;
-  return nullptr;
+    unique_ptr<S>* local;
+    return nullptr;
 }
 /*
 OUTPUT:

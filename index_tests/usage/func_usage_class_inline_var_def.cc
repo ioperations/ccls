@@ -1,7 +1,7 @@
 static int helper() { return 5; }
 
 class Foo {
-  int x = helper();
+    int x = helper();
 };
 
 /*

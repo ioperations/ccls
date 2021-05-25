@@ -3,8 +3,8 @@ void consume(void (*)()) {}
 void used() {}
 
 void user() {
-  void (*x)() = &used;
-  consume(&used);
+    void (*x)() = &used;
+    consume(&used);
 }
 
 /*

@@ -9,8 +9,8 @@ int qux = 42;
 namespace fbz = foo::bar::baz;
 
 void func() {
-  int a = foo::bar::baz::qux;
-  int b = fbz::qux;
+    int a = foo::bar::baz::qux;
+    int b = fbz::qux;
 }
 
 /*

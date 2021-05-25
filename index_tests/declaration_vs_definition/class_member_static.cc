@@ -1,5 +1,5 @@
 class Foo {
-  static int foo;
+    static int foo;
 };
 
 int Foo::foo;

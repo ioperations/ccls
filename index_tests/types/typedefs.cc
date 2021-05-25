@@ -1,4 +1,4 @@
-typedef int(func)(const int *a, const int *b);
+typedef int(func)(const int* a, const int* b);
 static func g;
 
 /*

@@ -2,7 +2,7 @@
 #define DISALLOW(type) type(type&&) = delete;
 
 struct Foo {
-  DISALLOW(Foo);
+    DISALLOW(Foo);
 };
 
 int x = A;

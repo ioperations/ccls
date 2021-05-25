@@ -1,11 +1,11 @@
 class Foo {
- public:
-  Foo() {}
+   public:
+    Foo() {}
 };
 
 void foo() {
-  Foo f;
-  Foo* f2 = new Foo();
+    Foo f;
+    Foo* f2 = new Foo();
 }
 
 /*

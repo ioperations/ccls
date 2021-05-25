@@ -1,7 +1,7 @@
 enum VarType {};
 
 struct Holder {
-  static constexpr VarType static_var = (VarType)0x0;
+    static constexpr VarType static_var = (VarType)0x0;
 };
 
 const VarType Holder::static_var;

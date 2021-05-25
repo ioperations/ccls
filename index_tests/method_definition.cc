@@ -1,5 +1,5 @@
 class Foo {
-  void foo() const;
+    void foo() const;
 };
 
 void Foo::foo() const {}

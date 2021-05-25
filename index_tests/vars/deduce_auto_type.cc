@@ -1,7 +1,7 @@
 class Foo {};
 void f() {
-  auto x = new Foo();
-  auto* y = new Foo();
+    auto x = new Foo();
+    auto* y = new Foo();
 }
 
 /*

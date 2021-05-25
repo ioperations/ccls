@@ -1,5 +1,5 @@
 void foo(int p) {
-  { int p = 0; }
+    { int p = 0; }
 }
 /*
 OUTPUT:

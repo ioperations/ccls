@@ -1,5 +1,5 @@
 class IFoo {
-  virtual void foo() = 0;
+    virtual void foo() = 0;
 };
 
 /*

@@ -1,6 +1,6 @@
 #define FOO(aaa, bbb) \
-  int a();            \
-  int a() { return aaa + bbb; }
+    int a();          \
+    int a() { return aaa + bbb; }
 
 int make1() { return 3; }
 const int make2 = 5;

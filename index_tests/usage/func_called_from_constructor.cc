@@ -1,7 +1,7 @@
 void called() {}
 
 struct Foo {
-  Foo();
+    Foo();
 };
 
 Foo::Foo() { called(); }

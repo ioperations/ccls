@@ -31,7 +31,7 @@ FunctionDecl as_return_type
         CXXNullPtrLiteralExpr
 #endif
 unique_ptr<unique_ptr<S1, S2>, S2>* as_return_type(unique_ptr<S1, S2>*) {
-  return nullptr;
+    return nullptr;
 }
 
 #if false
@@ -62,7 +62,7 @@ ClassDecl Foo
     TypeRef struct S2
 #endif
 class Foo {
-  unique_ptr<S1, S2>* foo();
+    unique_ptr<S1, S2>* foo();
 };
 
 #if false

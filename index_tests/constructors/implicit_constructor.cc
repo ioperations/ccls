@@ -1,10 +1,10 @@
 struct Type {
-  Type() {}
+    Type() {}
 };
 
 void Make() {
-  Type foo0;
-  auto foo1 = Type();
+    Type foo0;
+    auto foo1 = Type();
 }
 
 /*

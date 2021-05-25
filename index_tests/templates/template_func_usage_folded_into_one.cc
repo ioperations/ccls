@@ -1,6 +1,6 @@
 template <typename T>
 static int foo() {
-  return 3;
+    return 3;
 }
 
 int a = foo<int>();

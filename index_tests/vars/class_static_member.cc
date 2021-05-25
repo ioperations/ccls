@@ -1,5 +1,5 @@
 class Foo {
-  static Foo* member;
+    static Foo* member;
 };
 Foo* Foo::member = nullptr;
 

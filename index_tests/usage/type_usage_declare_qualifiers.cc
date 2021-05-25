@@ -1,10 +1,10 @@
 struct Type {};
 
 void foo(Type& a0, const Type& a1) {
-  Type a2;
-  Type* a3;
-  const Type* a4;
-  const Type* const a5 = nullptr;
+    Type a2;
+    Type* a3;
+    const Type* a4;
+    const Type* const a5 = nullptr;
 }
 /*
 OUTPUT:

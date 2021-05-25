@@ -1,10 +1,10 @@
 class Foo {
-  void operator()(int) {}
-  void operator()(bool);
-  int operator()(int a, int b);
+    void operator()(int) {}
+    void operator()(bool);
+    int operator()(int a, int b);
 };
 
-Foo &operator+=(const Foo &, const int &);
+Foo& operator+=(const Foo&, const int&);
 
 /*
 OUTPUT:

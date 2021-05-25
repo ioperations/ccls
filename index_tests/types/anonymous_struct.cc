@@ -1,8 +1,8 @@
 union vector3 {
-  struct {
-    float x, y, z;
-  };
-  float v[3];
+    struct {
+        float x, y, z;
+    };
+    float v[3];
 };
 
 /*

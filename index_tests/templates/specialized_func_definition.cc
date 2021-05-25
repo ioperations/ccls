@@ -1,6 +1,6 @@
 template <class T>
 class Template {
-  void Foo();
+    void Foo();
 };
 
 template <class T>

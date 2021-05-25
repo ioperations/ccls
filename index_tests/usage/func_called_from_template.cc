@@ -2,7 +2,7 @@ void called();
 
 template <typename T>
 void caller() {
-  called();
+    called();
 }
 
 void foo() { caller<int>(); }

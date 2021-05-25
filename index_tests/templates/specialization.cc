@@ -11,7 +11,7 @@ class allocator;
 
 template <typename T, typename Alloc = allocator<T> >
 class vector {
-  void clear();
+    void clear();
 };
 
 template <typename T>
@@ -25,7 +25,7 @@ struct Z2 {};
 
 template <>
 class vector<Z2> {
-  void clear();
+    void clear();
 };
 
 vector<char> vc;

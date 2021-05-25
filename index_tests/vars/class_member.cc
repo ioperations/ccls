@@ -1,5 +1,5 @@
 class Foo {
-  Foo* member;
+    Foo* member;
 };
 /*
 OUTPUT:

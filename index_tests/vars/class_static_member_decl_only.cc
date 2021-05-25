@@ -1,5 +1,5 @@
 class Foo {
-  static int member;
+    static int member;
 };
 /*
 OUTPUT:

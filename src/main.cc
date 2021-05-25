@@ -55,95 +55,98 @@ void closeLog() { fclose(ccls::log::file); }
 
 }  // namespace
 
-int main(int argc, char **argv) {
-  traceMe();
-  sys::PrintStackTraceOnErrorSignal(argv[0]);
-  cl::SetVersionPrinter([](raw_ostream &os) {
-    os << clang::getClangToolFullVersion("ccls version " CCLS_VERSION "\nclang")
-       << "\n";
-  });
+int main(int argc, char** argv) {
+    traceMe();
+    sys::PrintStackTraceOnErrorSignal(argv[0]);
+    cl::SetVersionPrinter([](raw_ostream& os) {
+        os << clang::getClangToolFullVersion("ccls version " CCLS_VERSION
+                                             "\nclang")
+           << "\n";
+    });
 
-  cl::HideUnrelatedOptions(C);
+    cl::HideUnrelatedOptions(C);
 
-  ParseCommandLineOptions(argc, argv,
-                          "C/C++/Objective-C language server\n\n"
-                          "See more on https://github.com/MaskRay/ccls/wiki");
+    ParseCommandLineOptions(argc, argv,
+                            "C/C++/Objective-C language server\n\n"
+                            "See more on https://github.com/MaskRay/ccls/wiki");
 
-  if (opt_help) {
-    PrintHelpMessage();
+    if (opt_help) {
+        PrintHelpMessage();
+        return 0;
+    }
+    ccls::log::verbosity = ccls::log::Verbosity(opt_verbose.getValue());
+
+    pipeline::init();
+    const char* env = getenv("CCLS_CRASH_RECOVERY");
+    if (!env || strcmp(env, "0") != 0) CrashRecoveryContext::Enable();
+
+    bool language_server = true;
+
+    if (opt_log_file.size()) {
+        ccls::log::file = opt_log_file == "stderr"
+                              ? stderr
+                              : fopen(opt_log_file.c_str(),
+                                      opt_log_file_append ? "ab" : "wb");
+        if (!ccls::log::file) {
+            fprintf(stderr, "failed to open %s\n", opt_log_file.c_str());
+            return 2;
+        }
+        setbuf(ccls::log::file, NULL);
+        atexit(closeLog);
+    }
+
+    if (opt_test_index != "!") {
+        language_server = false;
+        if (!ccls::runIndexTests(opt_test_index,
+                                 sys::Process::StandardInIsUserInput()))
+            return 1;
+    }
+
+    if (language_server) {
+        if (!opt_init.empty()) {
+            // We check syntax error here but override client-side
+            // initializationOptions in messages/initialize.cc
+            g_init_options = opt_init;
+            rapidjson::Document reader;
+            for (const std::string& str : g_init_options) {
+                rapidjson::ParseResult ok = reader.Parse(str.c_str());
+                if (!ok) {
+                    fprintf(
+                        stderr, "Failed to parse --init as JSON: %s (%zd)\n",
+                        rapidjson::GetParseError_En(ok.Code()), ok.Offset());
+                    return 1;
+                }
+                JsonReader json_reader{&reader};
+                try {
+                    Config config;
+                    reflect(json_reader, config);
+                } catch (std::invalid_argument& e) {
+                    fprintf(
+                        stderr, "Failed to parse --init %s, expected %s\n",
+                        static_cast<JsonReader&>(json_reader).getPath().c_str(),
+                        e.what());
+                    return 1;
+                }
+            }
+        }
+
+        sys::ChangeStdinToBinary();
+        sys::ChangeStdoutToBinary();
+        if (opt_index.size()) {
+            SmallString<256> root(opt_index);
+            sys::fs::make_absolute(root);
+            pipeline::standalone(std::string(root.data(), root.size()));
+        } else {
+            // The thread that reads from stdin and dispatchs commands to the
+            // main thread.
+            pipeline::launchStdin();
+            // The thread that writes responses from the main thread to stdout.
+            pipeline::launchStdout();
+            // Main thread which also spawns indexer threads upon the
+            // "initialize" request.
+            pipeline::mainLoop();
+        }
+    }
+
     return 0;
-  }
-  ccls::log::verbosity = ccls::log::Verbosity(opt_verbose.getValue());
-
-  pipeline::init();
-  const char *env = getenv("CCLS_CRASH_RECOVERY");
-  if (!env || strcmp(env, "0") != 0) CrashRecoveryContext::Enable();
-
-  bool language_server = true;
-
-  if (opt_log_file.size()) {
-    ccls::log::file =
-        opt_log_file == "stderr"
-            ? stderr
-            : fopen(opt_log_file.c_str(), opt_log_file_append ? "ab" : "wb");
-    if (!ccls::log::file) {
-      fprintf(stderr, "failed to open %s\n", opt_log_file.c_str());
-      return 2;
-    }
-    setbuf(ccls::log::file, NULL);
-    atexit(closeLog);
-  }
-
-  if (opt_test_index != "!") {
-    language_server = false;
-    if (!ccls::runIndexTests(opt_test_index,
-                             sys::Process::StandardInIsUserInput()))
-      return 1;
-  }
-
-  if (language_server) {
-    if (!opt_init.empty()) {
-      // We check syntax error here but override client-side
-      // initializationOptions in messages/initialize.cc
-      g_init_options = opt_init;
-      rapidjson::Document reader;
-      for (const std::string &str : g_init_options) {
-        rapidjson::ParseResult ok = reader.Parse(str.c_str());
-        if (!ok) {
-          fprintf(stderr, "Failed to parse --init as JSON: %s (%zd)\n",
-                  rapidjson::GetParseError_En(ok.Code()), ok.Offset());
-          return 1;
-        }
-        JsonReader json_reader{&reader};
-        try {
-          Config config;
-          reflect(json_reader, config);
-        } catch (std::invalid_argument &e) {
-          fprintf(stderr, "Failed to parse --init %s, expected %s\n",
-                  static_cast<JsonReader &>(json_reader).getPath().c_str(),
-                  e.what());
-          return 1;
-        }
-      }
-    }
-
-    sys::ChangeStdinToBinary();
-    sys::ChangeStdoutToBinary();
-    if (opt_index.size()) {
-      SmallString<256> root(opt_index);
-      sys::fs::make_absolute(root);
-      pipeline::standalone(std::string(root.data(), root.size()));
-    } else {
-      // The thread that reads from stdin and dispatchs commands to the main
-      // thread.
-      pipeline::launchStdin();
-      // The thread that writes responses from the main thread to stdout.
-      pipeline::launchStdout();
-      // Main thread which also spawns indexer threads upon the "initialize"
-      // request.
-      pipeline::mainLoop();
-    }
-  }
-
-  return 0;
 }

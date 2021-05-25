@@ -1,10 +1,10 @@
 struct Foo {
-  void Used();
+    void Used();
 };
 
 void user() {
-  Foo* f = nullptr;
-  f->Used();
+    Foo* f = nullptr;
+    f->Used();
 }
 
 /*

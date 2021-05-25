@@ -2,7 +2,7 @@ template <class T>
 class Template {};
 
 struct Foo {
-  void Bar(Template<double>&);
+    void Bar(Template<double>&);
 };
 
 void Foo::Bar(Template<double>&) {}

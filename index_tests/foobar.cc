@@ -3,7 +3,7 @@ enum B {};
 
 template <typename T>
 struct Foo {
-  struct Inner {};
+    struct Inner {};
 };
 
 Foo<A>::Inner a;

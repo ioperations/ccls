@@ -2,19 +2,19 @@
 
 template <typename T, typename... Args>
 T* MakeUnique(Args&&... args) {
-  return nullptr;
+    return nullptr;
 }
 
 template <typename T, typename... Args>
 T* maKE_NoRefs(Args... args) {
-  return nullptr;
+    return nullptr;
 }
 
 void caller22() {
-  MakeUnique<Foobar>();
-  MakeUnique<Foobar>(1);
-  MakeUnique<Foobar>(1, new Bar(), nullptr);
-  maKE_NoRefs<Foobar>(1, new Bar(), nullptr);
+    MakeUnique<Foobar>();
+    MakeUnique<Foobar>(1);
+    MakeUnique<Foobar>(1, new Bar(), nullptr);
+    maKE_NoRefs<Foobar>(1, new Bar(), nullptr);
 }
 
 // TODO: Eliminate the extra entries in the "types" array here. They come from

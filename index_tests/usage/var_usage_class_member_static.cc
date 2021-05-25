@@ -1,5 +1,5 @@
 struct Foo {
-  static int x;
+    static int x;
 };
 
 void accept(int);

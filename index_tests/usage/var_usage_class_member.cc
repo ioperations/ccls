@@ -1,20 +1,20 @@
 class Foo {
- public:
-  int x;
-  int y;
+   public:
+    int x;
+    int y;
 };
 
 void accept(int);
 void accept(int*);
 
 void foo() {
-  Foo f;
-  f.x = 3;
-  f.x += 5;
-  accept(f.x);
-  accept(f.x + 20);
-  accept(&f.x);
-  accept(f.y);
+    Foo f;
+    f.x = 3;
+    f.x += 5;
+    accept(f.x);
+    accept(f.x + 20);
+    accept(&f.x);
+    accept(f.y);
 }
 
 /*

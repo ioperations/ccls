@@ -1,6 +1,6 @@
 void foo() {
-  int x;
-  x = 3;
+    int x;
+    x = 3;
 }
 /*
 OUTPUT:

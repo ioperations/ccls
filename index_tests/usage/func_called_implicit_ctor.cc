@@ -1,5 +1,5 @@
 struct Wrapper {
-  Wrapper(int i);
+    Wrapper(int i);
 };
 
 int called() { return 1; }
