@@ -54,17 +54,6 @@ jobs:
             libclang-version: 11
             cxx-std: c++14
             optim-level: -O2
-          #
-          # Linux / g++-6 / -O0 / standalone / handler tracking
-          #
-          - build-type: full
-            runs-on: ubuntu-18.04
-            libclang-version: 11
-            cxx-std: c++14
-            optim-level: -O0
-          #
-          # Linux / g++-6 / -O0 / standalone / separate compilation / epoll disabled
-          #
     runs-on: ${{ matrix.runs-on }}
     env:
       CXX: clang++-${{ matrix.libclang-version }}
