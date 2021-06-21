@@ -14,13 +14,13 @@ set(DEFAULT_CMAKE_BUILD_TYPE Release)
 # (eg Visual Studio generators)
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to '${DEFAULT_CMAKE_BUILD_TYPE}' as none \
-was specified.")
+  was specified.")
   set(CMAKE_BUILD_TYPE ${DEFAULT_CMAKE_BUILD_TYPE}
-      CACHE STRING "Choose the type of build." FORCE)
+    CACHE STRING "Choose the type of build." FORCE)
 
   # Set the possible values of build type for cmake-gui
   set_property(CACHE CMAKE_BUILD_TYPE
-               PROPERTY STRINGS Debug Release MinSizeRel RelWithDebInfo)
+    PROPERTY STRINGS Debug Release MinSizeRel RelWithDebInfo)
 endif()
 
 ### Compile options
@@ -40,22 +40,22 @@ if(MSVC)
     /W3 # roughly -Wall
     /wd4996 # ignore deprecated declaration
     /wd4267 # ignores warning C4267
-            # (conversion from 'size_t' to 'type'),
-            # roughly -Wno-sign-compare
+    # (conversion from 'size_t' to 'type'),
+    # roughly -Wno-sign-compare
     /wd4800
     /wd4068 # Disable unknown pragma warning
     /std:c++17
     /Zc:__cplusplus
     $<$<CONFIG:Debug>:/FS>
-  )
+    )
   # relink system libs
   target_link_libraries(ccls PRIVATE Mincore.lib)
 else()
   # Common GCC/Clang(Linux) options
   target_compile_options(ccls PRIVATE
-                         -Wall
-                         -Wno-sign-compare
-                         )
+    -Wall
+    -Wno-sign-compare
+    )
 
   if(${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
     target_compile_options(ccls PRIVATE -Wno-return-type -Wno-unused-result)
@@ -63,7 +63,7 @@ else()
 
   if(${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
     target_compile_options(ccls PRIVATE
-                           $<$<CONFIG:Debug>:-fno-limit-debug-info>)
+      $<$<CONFIG:Debug>:-fno-limit-debug-info>)
   endif()
 endif()
 
@@ -88,7 +88,7 @@ else()
     clangLex
     clangDriver
     clangBasic
-  )
+    )
 endif()
 
 if(LLVM_LINK_LLVM_DYLIB)
@@ -141,16 +141,16 @@ if(NOT CLANG_RESOURCE_DIR)
     OUTPUT_VARIABLE CLANG_RESOURCE_DIR
     ERROR_VARIABLE CLANG_FIND_RESOURCE_DIR_ERROR
     OUTPUT_STRIP_TRAILING_WHITESPACE
-  )
+    )
 
   if(CLANG_FIND_RESOURCE_DIR_RESULT)
     message(FATAL_ERROR "Error retrieving Clang resource directory with Clang \
-            executable. Output:\n ${CLANG_FIND_RESOURCE_DIR_ERROR}")
+    executable. Output:\n ${CLANG_FIND_RESOURCE_DIR_ERROR}")
   endif()
 endif()
 
 set_property(SOURCE src/utils.cc APPEND PROPERTY COMPILE_DEFINITIONS
-             CLANG_RESOURCE_DIRECTORY=R"\(${CLANG_RESOURCE_DIR}\)")
+  CLANG_RESOURCE_DIRECTORY=R"\(${CLANG_RESOURCE_DIR}\)")
 
 ### Includes
 
@@ -215,7 +215,7 @@ target_sources(ccls PRIVATE
   src/test.cc
   src/utils.cc
   src/working_files.cc
-)
+  )
 
 target_sources(ccls PRIVATE
   src/messages/ccls_call.cc
@@ -238,7 +238,7 @@ target_sources(ccls PRIVATE
   src/messages/textDocument_rename.cc
   src/messages/textDocument_signatureHelp.cc
   src/messages/workspace.cc
-)
+  )
 
 ### Obtain CCLS version information from Git
 ### This only happens when cmake is re-run!
@@ -255,13 +255,16 @@ if(NOT CCLS_VERSION)
 endif()
 
 set_property(SOURCE src/main.cc APPEND PROPERTY
-             COMPILE_DEFINITIONS CCLS_VERSION=\"${CCLS_VERSION}\")
+  COMPILE_DEFINITIONS CCLS_VERSION=\"${CCLS_VERSION}\")
 set_property(SOURCE src/messages/initialize.cc APPEND PROPERTY
 
-             COMPILE_DEFINITIONS CCLS_VERSION=\"${CCLS_VERSION}\")
+  COMPILE_DEFINITIONS CCLS_VERSION=\"${CCLS_VERSION}\")
 
 SET(CPACK_GENERATOR "DEB")
 SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "ccls Authors") #required
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libclang-11-dev ,libclang-cpp11")
+set(CPACK_PACKAGE_DESCRIPTION "\nccls is a c/c++/obj-c/obj-c++ language server which
+implement language server protocal, supporting cross
+reference, hierarchies,completion, and semantic highlighting")
 set(CPACK_PACKAGE_VERSION_MAJOR ${CCLS_VERSION})
 INCLUDE(CPack)
