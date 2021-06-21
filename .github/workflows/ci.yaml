@@ -8,7 +8,7 @@ jobs:
       fail-fast: false
       matrix:
         build-type: ['sanity']
-        runs-on: [ubuntu-18.04, ubuntu-20.04]
+        runs-on: [ubuntu-20.04]
         # compiler: [g++-4.8, g++-5, g++-6, g++-7, g++-8, g++-9, g++-10, clang++-10, g++]
         libclang-version: [11]
         cxx-std: ['c++03', 'c++11', 'c++14', 'c++17', 'c++2a']
@@ -19,6 +19,7 @@ jobs:
           # Newer compilers don't run on ubuntu 18.04
           # Trim builds that use separate compilation
           # C++03 builds are always explicitly included
+
           - cxx-std: c++03
         include:
           #
