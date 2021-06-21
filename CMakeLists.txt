@@ -257,4 +257,11 @@ endif()
 set_property(SOURCE src/main.cc APPEND PROPERTY
              COMPILE_DEFINITIONS CCLS_VERSION=\"${CCLS_VERSION}\")
 set_property(SOURCE src/messages/initialize.cc APPEND PROPERTY
+
              COMPILE_DEFINITIONS CCLS_VERSION=\"${CCLS_VERSION}\")
+
+SET(CPACK_GENERATOR "DEB")
+SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "ccls Authors") #required
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libclang-11-dev ,libclang-cpp11")
+set(CPACK_PACKAGE_VERSION_MAJOR ${CCLS_VERSION})
+INCLUDE(CPack)
