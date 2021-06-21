@@ -1,0 +1,25 @@
+name : build and test
+
+on: push
+
+
+jobs:
+    build:
+        name: Buils on ${{ matrix.container }}
+        runs-on: ubuntu-latest
+        steps:
+        - id: step0
+          name: Checkout code
+          uses: actions/checkout@v2
+        - id: fetch_build_tools
+          run: |
+              sudo apt install cmake clang libclang-dev build-essential rapidjson-dev -y 
+        - id: build
+          run: |
+              mkdir build
+              cd build
+              cmake ..
+              make -j`nproc`
+
+
+
