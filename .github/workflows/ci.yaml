@@ -73,7 +73,7 @@ jobs:
     - name: Install compiler
       if: startsWith(matrix.runs-on, 'ubuntu')
       run: |
-        sudo apt install rapidjson-dev build-essentail -y
+        sudo apt install rapidjson-dev build-essential -y
         sudo apt-get install -y clang-${{ matrix.libclang-version }} libclang-${{ matrix.libclang-version }}-dev
     - name: Build
       if: startsWith(matrix.build-type, 'full')
