@@ -18,7 +18,6 @@ jobs:
           #
           - build-type: full
             runs-on: ubuntu-20.04
-            libclang-version: 11
             cxx-std: c++2a
             optim-level: -O2
           #
@@ -26,13 +25,11 @@ jobs:
           #
           - build-type: full
             runs-on: ubuntu-20.04
-            libclang-version: 11
             cxx-std: c++17
             optim-level: -O2
           #
           - build-type: full
             runs-on: ubuntu-20.04
-            libclang-version: 11
             cxx-std: c++11
             optim-level: -O2
           #
@@ -40,14 +37,12 @@ jobs:
           #
           - build-type: full
             runs-on: ubuntu-20.04
-            libclang-version: 11
             cxx-std: c++14
             optim-level: -O0
           #
 #
           - build-type: full
             runs-on: ubuntu-20.04
-            libclang-version: 11
             cxx-std: c++03
             optim-level: -O0
           #
