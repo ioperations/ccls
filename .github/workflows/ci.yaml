@@ -11,12 +11,6 @@ jobs:
         libclang-version: [11]
         cxx-std: ['c++03', 'c++11', 'c++14', 'c++17', 'c++2a']
         optim-level: ['-O3']
-        exclude:
-          # Newer compilers don't run on ubuntu 18.04
-          # Trim builds that use separate compilation
-          # C++03 builds are always explicitly included
-
-          - cxx-std: c++03
         include:
           #
           # Linux / g++-10 -std=c++2a / -O2 / standalone
@@ -35,6 +29,12 @@ jobs:
             cxx-std: c++17
             optim-level: -O2
           #
+          - build-type: full
+            runs-on: ubuntu-20.04
+            libclang-version: 11
+            cxx-std: c++11
+            optim-level: -O2
+          #
           # Linux / g++-9 -std=c++14 / -O0 / standalone / separate compilation
           #
           - build-type: full
@@ -43,6 +43,14 @@ jobs:
             cxx-std: c++14
             optim-level: -O0
           #
+#
+          - build-type: full
+            runs-on: ubuntu-20.04
+            libclang-version: 11
+            cxx-std: c++03
+            optim-level: -O0
+          #
+
           # Linux / g++-6 / -O2 / standalone
     runs-on: ${{ matrix.runs-on }}
     env:
