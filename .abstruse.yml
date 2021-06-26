@@ -1,0 +1,19 @@
+image: ubuntu:focal
+
+branches:
+    test:
+        - master
+        - main
+
+before_install:
+    - apt-get update -y
+
+install:
+    - DEBIAN_FRONTEND="noninteractive" apt-get install -y  cmake rapidjson-dev build-essential clang-11 libclang-11-dev
+
+before_script:
+    - ln -sv /usr/bin/clang-11 /usr/bin/clang
+
+script:
+    - mkdir build ; cd build ; cmake -DCMAKE_CXX_COMPILER=clang++-11 -DCMAKE_C_COMPILER=clang-11 .. ; make -j`nproc`
+

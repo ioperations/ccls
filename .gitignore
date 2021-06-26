@@ -1,4 +1,3 @@
-/*
 !/.github/
 !/index_tests/
 !/src/
@@ -9,5 +8,7 @@
 !/LICENSE
 !/README.md
 !/meow/
+build
+compile_commands.json
 .ccls-cache
 .cache
