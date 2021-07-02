@@ -1,0 +1,31 @@
+name: "pre-release"
+
+on:
+  push:
+    tags:
+      - "0*"
+      - "1*"
+jobs:
+  pre-release:
+    name: "Pre Release"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      # ...
+      - name: "Build & test"
+        run: |
+          apt update 
+          apt install libclang-11-dev rapidjson-dev clang-11 build-essential
+          mkdir build
+          cd build
+          cmake -DCMAKE_CXX_COMPILER=clang++ ..
+          make -j`nproc`
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development Build"
+          files: |
+            LICENSE.txt
+            *.deb

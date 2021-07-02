@@ -133,7 +133,7 @@ void MessageHandler::bind(const char* method,
                           void (MessageHandler::*handler)(JsonReader&,
                                                           ReplyOnce&)) {
     method2request[method] = [this, handler](JsonReader& reader,
-                                             ReplyOnce& reply) {
+                                             ReplyOnce& reply) -> void {
         (this->*handler)(reader, reply);
     };
 }
