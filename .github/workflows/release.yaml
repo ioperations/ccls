@@ -5,6 +5,7 @@ on:
     tags:
       - "0*"
       - "1*"
+
 jobs:
   pre-release:
     name: "Pre Release"
