@@ -1,0 +1,38 @@
+name: "pre-release"
+
+on:
+  push:
+    tags:
+      - "0*"
+      - "1*"
+jobs:
+  pre-release:
+    name: "Pre Release"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Build & test"
+        uses: actions/checkout@v2
+        run: |
+          sudo apt update -qq 
+          DEBIAN_FRONTEND="noninteractive" sudo apt install -y lsb-release software-properties-common wget
+          sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+
+          echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal main\ndeb-src http://apt.llvm.org/focal/ llvm-toolchain-focal main\ndeb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main\ndeb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main\ndeb http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main\ndeb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main" | sudo tee -a /etc/apt/sources.list.d/llvm.list       
+
+          sudo apt update -qq 
+          apt update -qq
+          apt install libclang-11-dev rapidjson-dev clang-11 build-essential -y libclang-12-dev
+          mkdir build
+          cd build
+          cmake -DCMAKE_CXX_COMPILER=clang++ ..
+          cpack
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development Build"
+          files: |
+            LICENSE.txt
+            *.deb
