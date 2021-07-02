@@ -11,8 +11,8 @@ jobs:
     runs-on: "ubuntu-latest"
 
     steps:
+      - uses: actions/checkout@v2
       - name: "Build & test"
-        uses: actions/checkout@v2
         run: |
           sudo apt update -qq 
           DEBIAN_FRONTEND="noninteractive" sudo apt install -y lsb-release software-properties-common wget
