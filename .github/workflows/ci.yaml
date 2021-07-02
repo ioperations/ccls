@@ -20,7 +20,19 @@ jobs:
     - name: Install compiler
       if: startsWith(matrix.runs-on, 'ubuntu')
       run: |
-        sudo apt update
+        sudo apt update -qq 
+        DEBIAN_FRONTEND="noninteractive" sudo apt install -y lsb-release software-properties-common wget
+        bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+        echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal main
+        deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal main
+        # 11
+        deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main
+        deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main
+        # 12
+        deb http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main
+        deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main
+        " >> /etc/apt/sources.list.d/llvm.list
+        sudo apt update -qq 
         sudo apt install -y rapidjson-dev build-essential -y clang-${{ matrix.libclang-version }} libclang-${{ matrix.libclang-version }}-dev libclang-11-dev libclang-12-dev
     - name: Build
       run: |

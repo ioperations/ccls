@@ -14,6 +14,15 @@ jobs:
       - name: "Build & test"
         uses: actions/checkout@v2
         run: |
+          echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal main
+          deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal main
+          # 11
+          deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main
+          deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main
+          # 12
+          deb http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main
+          deb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main
+          " >> /etc/apt/sources.list.d/llvm.list
           apt update -qq
           apt install libclang-11-dev rapidjson-dev clang-11 build-essential -y libclang-12-dev
           mkdir build
