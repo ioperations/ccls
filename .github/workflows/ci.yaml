@@ -20,7 +20,8 @@ jobs:
     - name: Install compiler
       if: startsWith(matrix.runs-on, 'ubuntu')
       run: |
-        sudo apt install -y rapidjson-dev build-essential -y clang-${{ matrix.libclang-version }} libclang-${{ matrix.libclang-version }}-dev libclang-11-dev
+        sudo apt update
+        sudo apt install -y rapidjson-dev build-essential -y clang-${{ matrix.libclang-version }} libclang-${{ matrix.libclang-version }}-dev libclang-11-dev libclang-12-dev
     - name: Build
       run: |
         mkdir build

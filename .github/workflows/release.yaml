@@ -13,9 +13,10 @@ jobs:
     steps:
       # ...
       - name: "Build & test"
+        uses: actions/checkout@v2
         run: |
-          apt update 
-          apt install libclang-11-dev rapidjson-dev clang-11 build-essential
+          apt update -qq
+          apt install libclang-11-dev rapidjson-dev clang-11 build-essential -y libclang-12-dev
           mkdir build
           cd build
           cmake -DCMAKE_CXX_COMPILER=clang++ ..
