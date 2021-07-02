@@ -250,7 +250,7 @@ if(NOT CCLS_VERSION)
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
   if(NOT CCLS_VERSION)
-    set(CCLS_VERSION "<unknown>")
+    set(CCLS_VERSION "101")
   endif()
 endif()
 
