@@ -8,13 +8,14 @@ jobs:
       fail-fast: false
       matrix:
         runs-on: [ubuntu-20.04]
-        libclang-version: ["6.0","7","8","9","10","11","12"]
-        cxx-std: ['c++03', 'c++11', 'c++14', 'c++17', 'c++2a']
+        libclang-version: ["12"]
+        cxx-std: ['c++2a']
         optim-level: ['-O3']
     runs-on: ${{ matrix.runs-on }}
     env:
       CXX: clang++-${{ matrix.libclang-version }}
       CXXFLAGS: -std=${{ matrix.cxx-std }} ${{ matrix.optim-level }} -Wall -Wextra 
+      DEBIAN_FRONTEND: "noninteractive" 
     steps:
     - uses: actions/checkout@v2
     - name: Install compiler
@@ -23,7 +24,7 @@ jobs:
         sudo apt update -qq 
         DEBIAN_FRONTEND="noninteractive" sudo apt install -y lsb-release software-properties-common wget
         wget - https://apt.llvm.org/llvm.sh -o llvm.sh
-        DEBIAN_FRONTEND="noninteractive" sudo bash llvm.sh 12
+        sudo bash llvm.sh 12
 
         echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal main\ndeb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main\ndeb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main" | sudo tee -a /etc/apt/sources.list.d/llvm.list       
 
