@@ -501,9 +501,6 @@ void MessageHandler::textDocument_completion(CompletionParam& param,
 
     CompletionList result;
 
-
-
-
     // It shouldn't be possible, but sometimes vscode will send queries out
     // of order, ie, we get completion request before buffer content update.
     std::string buffer_line;

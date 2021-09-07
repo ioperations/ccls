@@ -99,7 +99,7 @@ void MessageHandler::textDocument_hover(TextDocumentPositionParam& param,
         }
 
         reply(result);
-    }else{
+    } else {
         reply(JsonNull{});
     }
 }

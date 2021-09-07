@@ -323,28 +323,26 @@ std::unique_ptr<CompilerInstance> buildCompilerInstance(
     return clang;
 }
 
-bool parse(CompilerInstance &clang) {
-  SyntaxOnlyAction action;
-  llvm::CrashRecoveryContext crc;
-  bool ok = false;
-  auto run = [&]() {
-    if (!action.BeginSourceFile(clang, clang.getFrontendOpts().Inputs[0]))
-      return;
-#if LLVM_VERSION_MAJOR >= 9 // rL364464
-    if (llvm::Error e = action.Execute()) {
-      llvm::consumeError(std::move(e));
-      return;
-    }
+bool parse(CompilerInstance& clang) {
+    SyntaxOnlyAction action;
+    llvm::CrashRecoveryContext crc;
+    bool ok = false;
+    auto run = [&]() {
+        if (!action.BeginSourceFile(clang, clang.getFrontendOpts().Inputs[0]))
+            return;
+#if LLVM_VERSION_MAJOR >= 9  // rL364464
+        if (llvm::Error e = action.Execute()) {
+            llvm::consumeError(std::move(e));
+            return;
+        }
 #else
-    if (!action.Execute())
-      return;
+        if (!action.Execute()) return;
 #endif
-    action.EndSourceFile();
-    ok = true;
-  };
-  if (!crc.RunSafely(run))
-    LOG_S(ERROR) << "clang crashed";
-  return ok;
+        action.EndSourceFile();
+        ok = true;
+    };
+    if (!crc.RunSafely(run)) LOG_S(ERROR) << "clang crashed";
+    return ok;
 }
 
 void buildPreamble(Session& session, CompilerInvocation& ci,
