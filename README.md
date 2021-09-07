@@ -5,14 +5,14 @@
 
 ```json
 {
-    "initializationOptions"{
-        "client":{
+    "initializationOptions": {
+        "client": {
             "snippetSupport": true,
             "hoverProvider": false
             }
         },
-        "clang":{
-            "extraArgs":[
+        "clang": {
+            "extraArgs": [
                 "-std=c++20",
                 "-Wall"
             ]
