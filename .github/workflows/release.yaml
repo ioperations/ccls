@@ -16,12 +16,12 @@ jobs:
         run: |
           sudo apt update -qq 
           DEBIAN_FRONTEND="noninteractive" sudo apt install -y lsb-release software-properties-common wget
-          sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
-
-          echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal main\ndeb-src http://apt.llvm.org/focal/ llvm-toolchain-focal main\ndeb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main\ndeb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main\ndeb http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main\ndeb-src http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main" | sudo tee -a /etc/apt/sources.list.d/llvm.list       
+          wget - https://apt.llvm.org/llvm.sh -o llvm.sh
+          sudo bash llvm.sh 12
+          echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal main\ndeb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main\ndeb http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main" | sudo tee -a /etc/apt/sources.list.d/llvm.list       
 
           sudo apt update -qq 
-          sudo apt install libclang-11-dev rapidjson-dev clang-11 build-essential -y libclang-12-dev
+          sudo apt install libclang-11-dev rapidjson-dev clang-12 build-essential -y libclang-12-dev
           mkdir build
           cd build
           cmake -DCMAKE_CXX_COMPILER=clang++ ..
