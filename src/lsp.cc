@@ -68,23 +68,46 @@ void DocumentUri::setPath(const std::string& path) {
     t += "file://";
 #endif
 
-    // clang-format off
-  for (char c : raw_uri)
-    switch (c) {
-    case ' ': t += "%20"; break;
-    case '#': t += "%23"; break;
-    case '$': t += "%24"; break;
-    case '&': t += "%26"; break;
-    case '(': t += "%28"; break;
-    case ')': t += "%29"; break;
-    case '+': t += "%2B"; break;
-    case ',': t += "%2C"; break;
-    case ';': t += "%3B"; break;
-    case '?': t += "%3F"; break;
-    case '@': t += "%40"; break;
-    default: t += c; break;
+    for (char c : raw_uri) {
+        switch (c) {
+            case ' ':
+                t += "%20";
+                break;
+            case '#':
+                t += "%23";
+                break;
+            case '$':
+                t += "%24";
+                break;
+            case '&':
+                t += "%26";
+                break;
+            case '(':
+                t += "%28";
+                break;
+            case ')':
+                t += "%29";
+                break;
+            case '+':
+                t += "%2B";
+                break;
+            case ',':
+                t += "%2C";
+                break;
+            case ';':
+                t += "%3B";
+                break;
+            case '?':
+                t += "%3F";
+                break;
+            case '@':
+                t += "%40";
+                break;
+            default:
+                t += c;
+                break;
+        }
     }
-    // clang-format on
     raw_uri = std::move(t);
 }
 
