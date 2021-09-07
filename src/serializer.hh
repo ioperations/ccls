@@ -63,6 +63,7 @@ struct JsonWriter {
   void string(const char *s, size_t len);
 };
 
+/// 序列化读
 struct BinaryReader {
   const char *p_;
 
@@ -93,6 +94,7 @@ struct BinaryReader {
   }
 };
 
+/// 序列化 写
 struct BinaryWriter {
   std::string buf_;
 

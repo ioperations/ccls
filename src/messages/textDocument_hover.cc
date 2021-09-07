@@ -78,25 +78,29 @@ std::pair<std::optional<MarkedString>, std::optional<MarkedString>> getHover(
 
 void MessageHandler::textDocument_hover(TextDocumentPositionParam& param,
                                         ReplyOnce& reply) {
-    auto [file, wf] = findOrFail(param.textDocument.uri.getPath(), reply);
-    if (!wf) return;
+    if (g_config->client.hoverProvider) {
+        auto [file, wf] = findOrFail(param.textDocument.uri.getPath(), reply);
+        if (!wf) return;
 
-    Hover result;
-    for (SymbolRef sym : findSymbolsAtLocation(wf, file, param.position)) {
-        std::optional<lsRange> ls_range =
-            getLsRange(wfiles->getFile(file->def->path), sym.range);
-        if (!ls_range) continue;
+        Hover result;
+        for (SymbolRef sym : findSymbolsAtLocation(wf, file, param.position)) {
+            std::optional<lsRange> ls_range =
+                getLsRange(wfiles->getFile(file->def->path), sym.range);
+            if (!ls_range) continue;
 
-        auto [hover, comments] =
-            getHover(db, file->def->language, sym, file->id);
-        if (comments || hover) {
-            result.range = *ls_range;
-            if (comments) result.contents.push_back(*comments);
-            if (hover) result.contents.push_back(*hover);
-            break;
+            auto [hover, comments] =
+                getHover(db, file->def->language, sym, file->id);
+            if (comments || hover) {
+                result.range = *ls_range;
+                if (comments) result.contents.push_back(*comments);
+                if (hover) result.contents.push_back(*hover);
+                break;
+            }
         }
-    }
 
-    reply(result);
+        reply(result);
+    }else{
+        reply(JsonNull{});
+    }
 }
 }  // namespace ccls
