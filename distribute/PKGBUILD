@@ -1,4 +1,6 @@
 # Maintainer: aodong qin <ioperations.c at gmail.com>
+## makepkg -o PKGBUILD
+## pacman -U ./ccls*
 
 pkgname=ccls
 _pkgname=ccls
