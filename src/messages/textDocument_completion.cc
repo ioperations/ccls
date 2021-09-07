@@ -491,6 +491,10 @@ class CompletionConsumer : public CodeCompleteConsumer {
 
 void MessageHandler::textDocument_completion(CompletionParam& param,
                                              ReplyOnce& reply) {
+    if(!g_config->client.completionProvider){
+        reply(JsonNull{});
+        return;
+    }
     static CompleteConsumerCache<std::vector<CompletionItem>> cache;
     std::string path = param.textDocument.uri.getPath();
     WorkingFile* wf = wfiles->getFile(path);

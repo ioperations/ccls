@@ -440,4 +440,5 @@ void MessageHandler::shutdown(EmptyParam&, ReplyOnce& reply) {
 void MessageHandler::exit(EmptyParam&) {
     pipeline::g_quit.store(true, std::memory_order_relaxed);
 }
+
 }  // namespace ccls
