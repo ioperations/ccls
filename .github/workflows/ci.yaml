@@ -21,7 +21,6 @@ jobs:
     - name: Install compiler
       if: startsWith(matrix.runs-on, 'ubuntu')
       run: |
-        DEBIAN_FRONTEND="noninteractive" sudo apt update 
         DEBIAN_FRONTEND="noninteractive" sudo apt install -y lsb-release software-properties-common wget
         wget - https://apt.llvm.org/llvm.sh -o llvm.sh
         DEBIAN_FRONTEND="noninteractive" sudo bash llvm.sh 12
