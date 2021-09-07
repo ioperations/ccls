@@ -38,3 +38,25 @@ jobs:
         cd build
         cmake -DCMAKE_CXX_COMPILER=${CXX} ..
         make -j`nproc`
+
+    - name: release
+      if: startsWith(matrix.libclang-version,'12')
+      run: |
+        mkdir buildRe
+        cd buildRe
+        cmake -DCMAKE_CXX_COMPILER=clang++ ..
+        cpack
+
+    - name: releasefile
+      uses: "marvinpinto/action-automatic-releases@latest"
+      if: startsWith(matrix.libclang-version,'12')
+      with: 
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "Development Build"
+        files: |
+          LICENSE
+          buildRe/*.deb
+
+
