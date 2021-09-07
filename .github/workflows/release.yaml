@@ -21,7 +21,7 @@ jobs:
           echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal main\ndeb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main\ndeb http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main" | sudo tee -a /etc/apt/sources.list.d/llvm.list       
 
           sudo apt update 
-          DEBIAN_FRONTEND="noninteractive" sudo apt install -y rapidjson-dev build-essential -y clang-${{ matrix.libclang-version }} libclang-12-dev libclang-10-dev libclang-${{ matrix.libclang-version }}-dev
+          DEBIAN_FRONTEND="noninteractive" sudo apt install -y rapidjson-dev build-essential -y clang-12 libclang-12-dev libclang-10-dev
           mkdir build
           cd build
           cmake -DCMAKE_CXX_COMPILER=clang++ ..
