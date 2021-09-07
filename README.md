@@ -24,8 +24,8 @@ Saving files will incrementally update the index.
     "initializationOptions": {
         "client": {
             "snippetSupport": true,
-            "hoverProvider": false
-            }
+            "hoverProvider": false,
+            "completionProvider": false
         },
         "clang": {
             "extraArgs": [
