@@ -54,7 +54,7 @@ struct Diagnostic {
 ```
 
 - cause clangd use code as type string , if you use ccls with clangd both as your language server, the codeaction will not work for ccls
-- but ccls standalone could be ok !!!
+- but ccls standalone could be ok !!!  so different with [#395](https://github.com/MaskRay/ccls/issues/395) 
 
 - below is the message sent by coc.nvim ( a vim language client )
 ```json
