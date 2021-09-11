@@ -38,27 +38,14 @@ Saving files will incrementally update the index.
 }
 ```
 
-- fix
+## fix
 
-- from 
+- type of code from int to std::string
 ```cpp
 struct Diagnostic {
     lsRange range;
     int severity = 0;
-    int code = 0;
-    std::string source = "ccls";
-    std::string message;
-    std::vector<DiagnosticRelatedInformation> relatedInformation;
-    std::vector<TextEdit> fixits_;
-};
-```
-
-- to 
-```
-struct Diagnostic {
-    lsRange range;
-    int severity = 0;
-    std::string code = "";
+    int code = 0;              -> std::string code= "";
     std::string source = "ccls";
     std::string message;
     std::vector<DiagnosticRelatedInformation> relatedInformation;
@@ -77,92 +64,25 @@ struct Diagnostic {
     "method": "textDocument/codeAction",
     "params": {
         "textDocument": {
-            "uri": "file:///home/tablinux/scripts/z.cc"
+            ...
         },
         "range": {
-            "start": {
-                "line": 117,
-                "character": 0
-            },
-            "end": {
-                "line": 118,
-                "character": 0
-            }
+            ...
         },
         "context": {
             "diagnostics": [
                 {
-                    "range": {
-                        "start": {
-                            "line": 117,
-                            "character": 13
-                        },
-                        "end": {
-                            "line": 117,
-                            "character": 16
-                        }
-                    },
                     "severity": 1,
                     "code": 2,
                     "source": "ccls",
-                    "message": "no member named 'out' in namespace 'std'; did you mean 'cout'?",
-                    "relatedInformation": [
-                        {
-                            "location": {
-                                "uri": "file:///include/c%2B%2B/11.1.0/iostream",
-                                "range": {
-                                    "start": {
-                                        "line": 60,
-                                        "character": 17
-                                    },
-                                    "end": {
-                                        "line": 60,
-                                        "character": 21
-                                    }
-                                }
-                            },
-                            "message": "'cout' declared here"
-                        }
-                    ]
                 },
                 {
                     "code": "no_member_suggest",
                     "message": "No member named 'out' in namespace 'std'; did you mean 'cout'? (fix available)",
-                    "range": {
-                        "end": {
-                            "character": 16,
-                            "line": 117
-                        },
-                        "start": {
-                            "character": 13,
-                            "line": 117
-                        }
-                    },
-                    "relatedInformation": [
-                        {
-                            "location": {
-                                "range": {
-                                    "end": {
-                                        "character": 21,
-                                        "line": 60
-                                    },
-                                    "start": {
-                                        "character": 17,
-                                        "line": 60
-                                    }
-                                },
-                                "uri": "file:///usr/include/c%2B%2B/11.1.0/iostream"
-                            },
-                            "message": "'cout' declared here"
-                        }
-                    ],
                     "severity": 1,
                     "source": "clang"
                 }
             ],
-            "only": [
-                "quickfix"
-            ]
         }
     }
 }
