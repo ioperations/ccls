@@ -8,8 +8,10 @@
 #include <rapidjson/writer.h>
 #include <stdlib.h>
 
+#include <algorithm>
 #include <stdexcept>
 #include <thread>
+#include <vector>
 
 #include "filesystem.hh"
 #include "include_complete.hh"

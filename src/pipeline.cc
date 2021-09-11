@@ -541,6 +541,7 @@ void launchStdin() {
             auto message = std::make_unique<char[]>(len);
             std::copy(str.begin(), str.end(), message.get());
             auto document = std::make_unique<rapidjson::Document>();
+            // LOG_S(INFO) << str.c_str();
             document->Parse(message.get(), len);
             assert(!document->HasParseError());
 
