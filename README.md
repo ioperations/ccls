@@ -78,7 +78,6 @@ struct Diagnostic {
                 },
                 {
                     "code": "no_member_suggest",
-                    "message": "No member named 'out' in namespace 'std'; did you mean 'cout'? (fix available)",
                     "severity": 1,
                     "source": "clang"
                 }
