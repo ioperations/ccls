@@ -26,6 +26,8 @@ Saving files will incrementally update the index.
             "snippetSupport": true,
             "hoverProvider": false,
             "completionProvider": false,
+            "referencesProvider": false,
+            "definationProvider": false,
             "codeActionProvider": false
         },
         "clang": {
