@@ -35,6 +35,10 @@ REFLECT_STRUCT(ReferenceParam, textDocument, position, context, folders, base,
 
 void MessageHandler::textDocument_references(JsonReader& reader,
                                              ReplyOnce& reply) {
+    if (!g_config->client.referencesProvider) {
+        reply(JsonNull{});
+        return;
+    }
     ReferenceParam param;
     reflect(reader, param);
     auto [file, wf] = findOrFail(param.textDocument.uri.getPath(), reply);

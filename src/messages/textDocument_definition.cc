@@ -29,6 +29,10 @@ void MessageHandler::textDocument_declaration(TextDocumentPositionParam& param,
 
 void MessageHandler::textDocument_definition(TextDocumentPositionParam& param,
                                              ReplyOnce& reply) {
+    if(!g_config->client.definationProvider){
+        reply(JsonNull{});
+        return;
+    }
     int file_id;
     auto [file, wf] =
         findOrFail(param.textDocument.uri.getPath(), reply, &file_id);
