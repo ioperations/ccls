@@ -499,6 +499,7 @@ class IndexDataConsumer : public index::IndexDataConsumer {
         }
     }
 
+#if LLVM_VERSION_MAJOR < 14
     template <typename Def>
     void setName(const Decl* d, std::string_view short_name,
                  std::string_view qualified, Def& def) {
@@ -549,6 +550,58 @@ class IndexDataConsumer : public index::IndexDataConsumer {
         def.qual_name_offset = i;
         def.detailed_name = intern(name);
     }
+#else
+    template <typename Def>
+    void setName(const Decl* d, std::string_view short_name,
+                 std::string_view qualified, Def& def) {
+        SmallString<256> str;
+        llvm::raw_svector_ostream os(str);
+        d->print(os, getDefaultPolicy());
+
+        std::string name(str.data(), str.size());
+        simplifyAnonymous(name);
+        // Remove \n in DeclPrinter.cpp "{\n" + if(!TerseOutput)something + "}"
+        for (std::string::size_type i = 0;;) {
+            if ((i = name.find("{\n}", i)) == std::string::npos) break;
+            name.replace(i, 3, "{}");
+        }
+        auto i = name.find(short_name);
+        if (short_name.size())
+            while (i != std::string::npos &&
+                   ((i && isAsciiIdentifierContinue(name[i - 1])) ||
+                    isAsciiIdentifierContinue(name[i + short_name.size()])))
+                i = name.find(short_name, i + short_name.size());
+        if (i == std::string::npos) {
+            // e.g. operator type-parameter-1
+            i = 0;
+            def.short_name_offset = 0;
+            def.short_name_size = name.size();
+        } else {
+            if (short_name.empty() || (i >= 2 && name[i - 2] == ':')) {
+                // Don't replace name with qualified name in ns::name Cls::*name
+                def.short_name_offset = i;
+            } else {
+                name.replace(i, short_name.size(), qualified);
+                def.short_name_offset =
+                    i + qualified.size() - short_name.size();
+            }
+            // name may be empty while short_name is not.
+            def.short_name_size = name.empty() ? 0 : short_name.size();
+        }
+        for (int paren = 0; i; i--) {
+            // Skip parentheses in "(anon struct)::name"
+            if (name[i - 1] == ')')
+                paren++;
+            else if (name[i - 1] == '(')
+                paren--;
+            else if (!(paren > 0 || isAsciiIdentifierContinue(name[i - 1]) ||
+                       name[i - 1] == ':'))
+                break;
+        }
+        def.qual_name_offset = i;
+        def.detailed_name = intern(name);
+    }
+#endif
 
     void setVarName(const Decl* d, std::string_view short_name,
                     std::string_view qualified, IndexVar::Def& def) {
