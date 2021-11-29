@@ -193,6 +193,8 @@ std::mutex& getFileMutex(const std::string& path) {
     return mutexes[std::hash<std::string>()(path) % n_MUTEXES];
 }
 
+/// 真正实现编译器结果分析的函数，应该是一个Ast Consumer
+/****/
 bool indexer_Parse(SemaManager* completion, WorkingFiles* wfiles,
                    Project* project, VFS* vfs, const GroupMatch& matcher) {
     std::optional<IndexRequest> opt_request = index_request->tryPopFront();

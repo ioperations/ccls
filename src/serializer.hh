@@ -130,6 +130,9 @@ struct BinaryWriter {
   }
 };
 
+// |  1  |    2      | 1   |        4            | 1 | 8 |
+// | 253 | <uint16t> | 254 |       <uint32_t>
+
 struct IndexFile;
 
 #define REFLECT_MEMBER(name) reflectMember(vis, #name, v.name)

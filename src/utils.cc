@@ -143,12 +143,14 @@ bool normalizeFolder(std::string& path) {
     return false;
 }
 
+/// 获取上一次写入的时间
 std::optional<int64_t> lastWriteTime(const std::string& path) {
     sys::fs::file_status status;
     if (sys::fs::status(path, status)) return {};
     return sys::toTimeT(status.getLastModificationTime());
 }
 
+/// 把文件当中的内容读取到buffer当中
 std::optional<std::string> readContent(const std::string& filename) {
     char buf[4096];
     std::string ret;

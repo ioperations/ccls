@@ -1,6 +1,9 @@
 // Copyright 2017-2018 ccls Authors
 // SPDX-License-Identifier: Apache-2.0
 
+// this is a clang ast index consumer
+// https://clang.llvm.org/docs/RAVFrontendAction.html
+
 #include "indexer.hh"
 
 #include <clang/AST/AST.h>
@@ -93,6 +96,7 @@ struct IndexParam {
     }
 };
 
+/// 在输入的范围当中得到源代码字符串
 StringRef getSourceInRange(const SourceManager& sm, const LangOptions& langOpts,
                            SourceRange sr) {
     SourceLocation bloc = sr.getBegin(), eLoc = sr.getEnd();
@@ -107,6 +111,7 @@ StringRef getSourceInRange(const SourceManager& sm, const LangOptions& langOpts,
                           bInfo.second);
 }
 
+/// 根据声明得到他的所属类型 namesapce/val/type
 Kind getKind(const Decl* d, SymbolKind& kind) {
     switch (d->getKind()) {
         case Decl::LinkageSpec:
@@ -229,6 +234,7 @@ Kind getKind(const Decl* d, SymbolKind& kind) {
     }
 }
 
+/// 通过declaration 得到所在语言
 LanguageId getDeclLanguage(const Decl* d) {
     switch (d->getKind()) {
         default:
@@ -274,6 +280,7 @@ LanguageId getDeclLanguage(const Decl* d) {
     }
 }
 
+/// 得到t的基础类型
 // clang/lib/AST/DeclPrinter.cpp
 QualType getBaseType(QualType t, bool deduce_auto) {
     QualType baseType = t;
@@ -302,6 +309,7 @@ QualType getBaseType(QualType t, bool deduce_auto) {
     return baseType;
 }
 
+/// 得到QualType的Declration
 const Decl* getTypeDecl(QualType t, bool* specialization = nullptr) {
     Decl* d = nullptr;
     t = getBaseType(t.getUnqualifiedType(), true);
@@ -455,6 +463,7 @@ class IndexDataConsumer : public index::IndexDataConsumer {
         return ret;
     }
 
+    /// 从Declaration 中得到usr的值 usr? universal string representation
     Usr getUsr(const Decl* d, IndexParam::DeclInfo** info = nullptr) const {
         d = d->getCanonicalDecl();
         auto [it, inserted] = param.decl2Info.try_emplace(d);
@@ -685,6 +694,7 @@ class IndexDataConsumer : public index::IndexDataConsumer {
         return it->second.first;
     }
 
+    /// 将宏的使用记录放到db当中
     void addMacroUse(IndexFile* db, SourceManager& sm, Usr usr, Kind kind,
                      SourceLocation sl) const {
         FileID fid = sm.getFileID(sl);
@@ -693,6 +703,7 @@ class IndexDataConsumer : public index::IndexDataConsumer {
         Range spell =
             fromTokenRange(sm, ctx->getLangOpts(), SourceRange(sl, sl));
         Use use{{spell, Role::Dynamic}, lid};
+        /// 宏可以用来产生变量，函数，类型
         switch (kind) {
             case Kind::Func:
                 db->toFunc(usr).uses.push_back(use);
@@ -739,6 +750,9 @@ class IndexDataConsumer : public index::IndexDataConsumer {
 #if LLVM_VERSION_MAJOR < 10  // llvmorg-10-init-12036-g3b9715cb219
 #define handleDeclOccurrence handleDeclOccurence
 #endif
+    // ocurence 发生 蕴🐷
+    /// 这是一个visiter中的一个具体做事情的方法，会遍历ast将ast
+    /// index到自己的格式 RecursiveASTVisitor<>
     bool handleDeclOccurrence(const Decl* d, index::SymbolRoleSet roles,
                               ArrayRef<index::SymbolRelation> relations,
                               SourceLocation src_loc,
@@ -1328,6 +1342,7 @@ void init() {
                                          g_config->index.multiVersionBlacklist);
 }
 
+/// 真正实现编译器结果分析的函数，应该包含一个Ast Consumer
 IndexResult index(
     SemaManager* manager, WorkingFiles* wfiles, VFS* vfs,
     const std::string& opt_wdir, const std::string& main,

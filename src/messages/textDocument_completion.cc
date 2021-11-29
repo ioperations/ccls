@@ -491,7 +491,7 @@ class CompletionConsumer : public CodeCompleteConsumer {
 
 void MessageHandler::textDocument_completion(CompletionParam& param,
                                              ReplyOnce& reply) {
-    if(!g_config->client.completionProvider){
+    if (!g_config->client.completionProvider) {
         reply(JsonNull{});
         return;
     }

@@ -231,6 +231,7 @@ void MessageHandler::run(InMessage& msg) {
     }
 }
 
+///* 在db当中找到文件，并建立内部id和此文件的映射
 QueryFile* MessageHandler::findFile(const std::string& path, int* out_file_id) {
     QueryFile* ret = nullptr;
     auto it = db->name2file_id.find(lowerPathIfInsensitive(path));
@@ -246,6 +247,7 @@ QueryFile* MessageHandler::findFile(const std::string& path, int* out_file_id) {
     return ret;
 }
 
+/// 在工程项目当中查找文件路径，返回
 std::pair<QueryFile*, WorkingFile*> MessageHandler::findOrFail(
     const std::string& path, ReplyOnce& reply, int* out_file_id,
     bool allow_unopened) {

@@ -264,7 +264,8 @@ SET(CPACK_GENERATOR "DEB")
 SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "ccls Authors") #required
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libclang-10-dev ,libclang-cpp10")
 set(CPACK_PACKAGE_DESCRIPTION "\nccls is a c/c++/obj-c/obj-c++ language server which
-implement language server protocal, supporting cross
 reference, hierarchies,completion, and semantic highlighting")
 set(CPACK_PACKAGE_VERSION_MAJOR ${CCLS_VERSION})
 INCLUDE(CPack)
+
+message(STATUS " project config ok 🐮🍻")
