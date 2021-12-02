@@ -1,4 +1,4 @@
-name : build and test
+name: build and test
 
 on: push
 
@@ -8,55 +8,54 @@ jobs:
       fail-fast: false
       matrix:
         runs-on: [ubuntu-20.04]
-        libclang-version: ["6.0","7","8","9","10","11","12"]
-        cxx-std: ['c++2a']
-        optim-level: ['-O3']
+        libclang-version: ["6.0", "7", "8", "9", "10", "11", "12"]
+        cxx-std: ["c++2a"]
+        optim-level: ["-O3"]
     runs-on: ${{ matrix.runs-on }}
     env:
       CXX: clang++-${{ matrix.libclang-version }}
-      CXXFLAGS: -std=${{ matrix.cxx-std }} ${{ matrix.optim-level }} -Wall -Wextra 
-      DEBIAN_FRONTEND: "noninteractive" 
+      CXXFLAGS: -std=${{ matrix.cxx-std }} ${{ matrix.optim-level }} -Wall -Wextra
+      DEBIAN_FRONTEND: "noninteractive"
     steps:
-    - uses: actions/checkout@v2
-    - name: Install compiler
-      if: startsWith(matrix.runs-on, 'ubuntu')
-      run: |
-        printenv
-        sudo apt update -qq 2&> 1 || true
-        DEBIAN_FRONTEND="noninteractive" sudo apt install -y lsb-release software-properties-common curl
-        curl -sLf https://apt.llvm.org/llvm.sh -o llvm.sh
-        DEBIAN_FRONTEND="noninteractive" sudo bash llvm.sh 12
+      - uses: actions/checkout@v2
+      - name: Install compiler
+        if: startsWith(matrix.runs-on, 'ubuntu')
+        run: |
+          printenv
+          sudo apt update -qq 2&> 1 || true
+          DEBIAN_FRONTEND="noninteractive" sudo apt install -y lsb-release software-properties-common curl
+          curl -sLf https://apt.llvm.org/llvm.sh -o llvm.sh
+          DEBIAN_FRONTEND="noninteractive" sudo bash llvm.sh 12
 
-        echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal main\ndeb http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main\ndeb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main" | sudo tee -a /etc/apt/sources.list.d/llvm.list       
+          echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal main\ndeb http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main\ndeb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main" | sudo tee -a /etc/apt/sources.list.d/llvm.list       
 
-        DEBIAN_FRONTEND="noninteractive" sudo apt update 
-        DEBIAN_FRONTEND="noninteractive" sudo apt install -y rapidjson-dev build-essential -y clang-${{ matrix.libclang-version }} libclang-12-dev libclang-10-dev libclang-${{ matrix.libclang-version  }}-dev
+          DEBIAN_FRONTEND="noninteractive" sudo apt update 
+          DEBIAN_FRONTEND="noninteractive" sudo apt install -y rapidjson-dev build-essential -y clang-${{ matrix.libclang-version }} libclang-12-dev libclang-10-dev libclang-${{ matrix.libclang-version  }}-dev
 
-    - name: Build
-      run: |
-        mkdir build
-        cd build
-        cmake -DCMAKE_CXX_COMPILER=${CXX} ..
-        make -j`nproc`
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_CXX_COMPILER=${CXX} ..
+          make -j`nproc`
 
-    - name: release
-      if: startsWith(matrix.libclang-version,'12')
-      run: |
-        mkdir buildRe
-        cd buildRe
-        cmake -DCMAKE_CXX_COMPILER=clang++ ..
-        cpack
+      - name: release
+        if: startsWith(matrix.libclang-version,'12')
+        run: |
+          mkdir buildRe
+          cd buildRe
+          cmake -DCMAKE_CXX_COMPILER=clang++ ..
+          cpack
 
-    - name: releasefile
-      uses: "marvinpinto/action-automatic-releases@latest"
-      if: startsWith(matrix.libclang-version,'12')
-      with: 
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "latest"
-        prerelease: true
-        title: "Development Build"
-        files: |
-          LICENSE
-          buildRe/*.deb
-
-
+      - name: releasefile
+        uses: "marvinpinto/action-automatic-releases@latest"
+        if: startsWith(matrix.libclang-version,'12')
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development Build"
+          files: |
+            LICENSE
+            buildRe/*.deb
+            distribute/PKGBUILD
