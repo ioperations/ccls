@@ -237,7 +237,7 @@ struct Config {
         int64_t largeFileSize = 2 * 1024 * 1024;
 
         // true: LSP line/character; false: position
-        bool lsRanges = false;
+        bool lsRanges = true;
 
         // Like index.{whitelist,blacklist}, don't publish semantic highlighting
         // to blacklisted files.
