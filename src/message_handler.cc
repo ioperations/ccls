@@ -3,6 +3,7 @@
 
 #include "message_handler.hh"
 
+#include <_types/_uint8_t.h>
 #include <rapidjson/document.h>
 #include <rapidjson/reader.h>
 

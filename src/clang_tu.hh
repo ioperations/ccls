@@ -8,6 +8,8 @@
 #include <clang/Basic/SourceManager.h>
 #include <clang/Frontend/CompilerInstance.h>
 
+#include <string>
+
 #include "position.hh"
 
 #if LLVM_VERSION_MAJOR < 8
@@ -18,27 +20,27 @@ namespace vfs = clang::vfs;
 #endif
 
 namespace ccls {
-std::string pathFromFileEntry(const clang::FileEntry &file);
+std::string pathFromFileEntry(const clang::FileEntry& file);
 
-bool isInsideMainFile(const clang::SourceManager &sm, clang::SourceLocation sl);
+bool isInsideMainFile(const clang::SourceManager& sm, clang::SourceLocation sl);
 
-Range fromCharSourceRange(const clang::SourceManager &sm,
-                          const clang::LangOptions &lang,
+Range fromCharSourceRange(const clang::SourceManager& sm,
+                          const clang::LangOptions& lang,
                           clang::CharSourceRange csr,
-                          clang::FileID *fid = nullptr);
+                          clang::FileID* fid = nullptr);
 
-Range fromTokenRange(const clang::SourceManager &sm,
-                     const clang::LangOptions &lang, clang::SourceRange sr,
-                     clang::FileID *fid = nullptr);
+Range fromTokenRange(const clang::SourceManager& sm,
+                     const clang::LangOptions& lang, clang::SourceRange sr,
+                     clang::FileID* fid = nullptr);
 
-Range fromTokenRangeDefaulted(const clang::SourceManager &sm,
-                              const clang::LangOptions &lang,
+Range fromTokenRangeDefaulted(const clang::SourceManager& sm,
+                              const clang::LangOptions& lang,
                               clang::SourceRange sr, clang::FileID fid,
                               Range range);
 
 std::unique_ptr<clang::CompilerInvocation> buildCompilerInvocation(
-    const std::string &main, std::vector<const char *> args,
+    const std::string& main, std::vector<const char*> args,
     llvm::IntrusiveRefCntPtr<llvm::vfs::FileSystem> VFS);
 
-const char *clangBuiltinTypeName(int);
+const char* clangBuiltinTypeName(int);
 }  // namespace ccls

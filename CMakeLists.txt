@@ -3,6 +3,8 @@ project(ccls LANGUAGES CXX)
 
 option(USE_SYSTEM_RAPIDJSON "Use system RapidJSON instead of the git submodule if exists" ON)
 
+list(APPEND CMAKE_PREFIX_PATH "/usr/local/Cellar/llvm/13.0.1/lib/cmake/")
+
 # Sources for the executable are specified at end of CMakeLists.txt
 add_executable(ccls "")
 
