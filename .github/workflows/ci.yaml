@@ -8,7 +8,7 @@ jobs:
       fail-fast: false
       matrix:
         runs-on: [ubuntu-20.04]
-        libclang-version: ["6.0", "7", "8", "9", "10", "11", "12", "13"]
+        libclang-version: ["6.0", "7", "8", "9", "10", "11", "12"]
         cxx-std: ["c++2a"]
         optim-level: ["-O3"]
     runs-on: ${{ matrix.runs-on }}
