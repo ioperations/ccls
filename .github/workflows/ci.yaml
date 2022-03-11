@@ -8,7 +8,7 @@ jobs:
       fail-fast: false
       matrix:
         runs-on: [ubuntu-20.04]
-        libclang-version: ["6.0", "7", "8", "9", "10", "11", "12"]
+        libclang-version: ["6.0", "7", "8", "9", "10", "11", "12", "13"]
         cxx-std: ["c++2a"]
         optim-level: ["-O3"]
     runs-on: ${{ matrix.runs-on }}
@@ -30,7 +30,7 @@ jobs:
           echo "deb http://apt.llvm.org/focal/ llvm-toolchain-focal main\ndeb http://apt.llvm.org/focal/ llvm-toolchain-focal-12 main\ndeb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main" | sudo tee -a /etc/apt/sources.list.d/llvm.list       
 
           DEBIAN_FRONTEND="noninteractive" sudo apt update 
-          DEBIAN_FRONTEND="noninteractive" sudo apt install -y rapidjson-dev build-essential -y clang-${{ matrix.libclang-version }} libclang-12-dev libclang-10-dev libclang-${{ matrix.libclang-version  }}-dev
+          DEBIAN_FRONTEND="noninteractive" sudo apt install -y rapidjson-dev build-essential -y clang-${{ matrix.libclang-version }} libclang-${{ matrix.libclang-version  }}-dev
 
       - name: Build
         run: |
