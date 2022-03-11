@@ -23,7 +23,7 @@ jobs:
         run: |
           printenv
           sudo apt update -qq 2&> 1 || true
-          DEBIAN_FRONTEND="noninteractive" sudo apt install -y lsb-release software-properties-common curl
+          DEBIAN_FRONTEND="noninteractive" sudo apt install -y lsb-release software-properties-common curl libclang-11-dev
 
           DEBIAN_FRONTEND="noninteractive" sudo apt update 
           DEBIAN_FRONTEND="noninteractive" sudo apt install -y rapidjson-dev build-essential -y clang-${{ matrix.libclang-version }} libclang-${{ matrix.libclang-version  }}-dev
