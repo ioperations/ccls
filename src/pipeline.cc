@@ -575,18 +575,6 @@ void launchStdin() {
             else
                 LOG_V(2) << "receive NotificationMessage " << method;
 
-            /*
-if (method == "textDocument/didOpen") {
-textDocument params;
-reflectMember(reader, "params", params);
-LOG_V(2) << "params : " << id.value << " " << method
-         << params.textDocument.languageId
-         << params.textDocument.text;
-}
-
-LOG_V(2) << "full RequestMessage: " << id.value << " " << method
-     << message.get();
-            */
             if (method.empty()) continue;
             received_exit = method == "exit";
             // g_config is not available before "initialize". Use 0 in that
