@@ -5,12 +5,12 @@
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 
+#include <log.hh>
 #include <unordered_set>
 
 #include "message_handler.hh"
 #include "pipeline.hh"
 #include "query.hh"
-#include <log.hh>
 
 namespace ccls {
 namespace {
@@ -49,7 +49,7 @@ void MessageHandler::textDocument_codeAction(CodeActionParam& param,
             result.push_back(cmd);
         }
     }
-    LOG_S(INFO) << "Diagnostic : " <<  result.size() ;
+    LOG_S(INFO) << "Diagnostic : " << result.size();
     reply(result);
 }
 

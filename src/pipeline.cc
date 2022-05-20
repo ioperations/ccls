@@ -629,7 +629,10 @@ void mainLoop() {
 
     SemaManager manager(
         &project, &wfiles,
-        [](const std::string& path, std::vector<Diagnostic> diagnostics) {
+        [&](const std::string& path, std::vector<Diagnostic> diagnostics) {
+            if(!g_config->client.diagnosticProvider){
+                return ;
+            }
             PublishDiagnosticParam params;
             params.uri = DocumentUri::fromPath(path);
             params.diagnostics = std::move(diagnostics);

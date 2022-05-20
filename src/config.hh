@@ -123,6 +123,7 @@ struct Config {
         bool completionProvider = true;
         bool referencesProvider = true;
         bool definationProvider = true;
+        bool diagnosticProvider = true;
         bool codeActionProvider = true;
         // If false, disable snippets and complete just the identifier part.
         // TextDocumentClientCapabilities.completion.completionItem.snippetSupport
@@ -346,8 +347,8 @@ REFLECT_STRUCT(Config::Clang, excludeArgs, extraArgs, pathMappings,
                resourceDir);
 REFLECT_STRUCT(Config::ClientCapability, diagnosticsRelatedInformation,
                hierarchicalDocumentSymbolSupport, linkSupport, hoverProvider,
-               codeActionProvider, completionProvider, referencesProvider,
-               snippetSupport);
+               diagnosticProvider, codeActionProvider, completionProvider,
+               referencesProvider, snippetSupport);
 REFLECT_STRUCT(Config::CodeLens, localVariables);
 REFLECT_STRUCT(Config::Completion::Include, blacklist, maxPathSize,
                suffixWhitelist, whitelist);
