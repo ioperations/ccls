@@ -185,7 +185,7 @@ class StoreInclude : public PPCallbacks {
                             const FileEntry* file, StringRef searchPath,
                             StringRef relativePath,
                             const clang::Module* imported,
-                            SrcMgr::CharacteristicKind fileKind) override {
+                            SrcMgr::CharacteristicKind fileKind) {
         (void)sm;
         if (file && seen.insert(file).second)
             out.emplace_back(pathFromFileEntry(*file),

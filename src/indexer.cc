@@ -1178,7 +1178,7 @@ class IndexPPCallbacks : public PPCallbacks {
                             CharSourceRange filenameRange,
                             const FileEntry* file, StringRef searchPath,
                             StringRef relativePath, const Module* imported,
-                            SrcMgr::CharacteristicKind fileType) override {
+                            SrcMgr::CharacteristicKind fileType) {
         if (!file) return;
         auto spell = fromCharSourceRange(sm, param.ctx->getLangOpts(),
                                          filenameRange, nullptr);

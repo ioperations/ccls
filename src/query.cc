@@ -5,6 +5,7 @@
 
 #include <assert.h>
 #include <limits.h>
+#include <llvm/ADT/STLExtras.h>
 #include <rapidjson/document.h>
 #include <stdint.h>
 
