@@ -4,8 +4,6 @@
 // this is a clang ast index consumer
 // https://clang.llvm.org/docs/RAVFrontendAction.html
 
-#include "indexer.hh"
-
 #include <clang/AST/AST.h>
 #include <clang/Basic/TargetInfo.h>
 #include <clang/Frontend/FrontendAction.h>
@@ -24,6 +22,7 @@
 #include <unordered_set>
 
 #include "clang_tu.hh"
+#include "indexer.hh"
 #include "log.hh"
 #include "pipeline.hh"
 #include "platform.hh"
@@ -1173,6 +1172,7 @@ class IndexPPCallbacks : public PPCallbacks {
         if (reason == FileChangeReason::EnterFile)
             (void)param.consumeFile(sm.getFileID(sl));
     }
+    using PPCallbacks::InclusionDirective;
     void InclusionDirective(SourceLocation hashLoc, const Token& tok,
                             StringRef included, bool isAngled,
                             CharSourceRange filenameRange,

@@ -1,8 +1,6 @@
 // Copyright 2017-2018 ccls Authors
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sema_manager.hh"
-
 #include <clang/Basic/TargetInfo.h>
 #include <clang/Lex/PreprocessorOptions.h>
 #include <clang/Sema/CodeCompleteConsumer.h>
@@ -17,6 +15,7 @@
 #include "log.hh"
 #include "pipeline.hh"
 #include "platform.hh"
+#include "sema_manager.hh"
 using namespace clang;
 using namespace llvm;
 
@@ -171,7 +170,7 @@ CharSourceRange diagnosticRange(const clang::Diagnostic& d,
     return r;
 }
 
-class StoreInclude : public PPCallbacks {
+class StoreInclude final : public PPCallbacks {
     const SourceManager& sm;
     IncludeStructure& out;
     DenseSet<const FileEntry*> seen;
@@ -179,6 +178,7 @@ class StoreInclude : public PPCallbacks {
    public:
     StoreInclude(const SourceManager& sm, IncludeStructure& out)
         : sm(sm), out(out) {}
+    using PPCallbacks::InclusionDirective;
     void InclusionDirective(SourceLocation hashLoc, const Token& includeTok,
                             StringRef fileName, bool isAngled,
                             CharSourceRange filenameRange,
@@ -393,8 +393,13 @@ void buildPreamble(Session& session, CompilerInvocation& ci,
     }
 
     CclsPreambleCallbacks pc;
+#if LLVM_VERSION_MAJOR >= 17
+    if (auto newPreamble = PrecompiledPreamble::Build(
+            ci, buf.get(), bounds, *de, fs, session.pch, true, "", pc)) {
+#else
     if (auto newPreamble = PrecompiledPreamble::Build(
             ci, buf.get(), bounds, *de, fs, session.pch, true, pc)) {
+#endif
         assert(!ci.getPreprocessorOpts().RetainRemappedFileBuffers);
         if (oldP) {
             auto& old_includes = oldP->includes;

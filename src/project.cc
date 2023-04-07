@@ -1,13 +1,14 @@
 // Copyright 2017-2018 ccls Authors
 // SPDX-License-Identifier: Apache-2.0
 
-#include "project.hh"
-
 #include <clang/Driver/Compilation.h>
 #include <clang/Driver/Driver.h>
 #include <clang/Driver/Types.h>
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Tooling/CompilationDatabase.h>
+#if LLVM_VERSION_MAJOR >= 17
+#include <llvm/ADT/Optional.h>
+#endif
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/ADT/StringSet.h>
 #include <llvm/Support/GlobPattern.h>
@@ -20,6 +21,7 @@
 #include "log.hh"
 #include "pipeline.hh"
 #include "platform.hh"
+#include "project.hh"
 #include "utils.hh"
 #include "working_files.hh"
 
@@ -386,8 +388,13 @@ void Project::loadDirectory(const std::string& root, Project::Folder& folder) {
         std::array<Optional<StringRef>, 3> redir{StringRef(stdinPath),
                                                  StringRef(path), StringRef()};
         std::vector<StringRef> args{g_config->compilationDatabaseCommand, root};
+#if LLVM_VERSION_MAJOR <= 16
         if (sys::ExecuteAndWait(args[0], args, llvm::None, redir, 0, 0,
                                 &err_msg) < 0) {
+#else
+        if (sys::ExecuteAndWait(args[0], args, std::nullopt, redir, 0, 0,
+                                &err_msg) < 0) {
+#endif
             LOG_S(ERROR) << "failed to execute " << args[0].str() << " "
                          << args[1].str() << ": " << err_msg;
             return;
